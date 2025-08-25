@@ -1,16 +1,25 @@
 .App {
   text-align: center;
   min-height: 100vh;
-  background-color: #f5f5f5;
+  background: linear-gradient(120deg, var(--gray-100), #ffffff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
 }
 
 .container {
-  max-width: 1800px;
+  max-width: 1200px;
   margin: 0 auto;
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  padding: 30px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+  padding: 40px;
+  transition: box-shadow 0.3s ease;
+}
+
+.container:hover {
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
 }
 
 h1 {
@@ -87,10 +96,10 @@ h1 {
   gap: 5px;
   cursor: pointer;
   padding: 7px 10px;
-  background: white;
-  border: 2px solid #dee2e6;
+  background: var(--gray-100);
+  border: 2px solid transparent;
   border-radius: 6px;
-  transition: all 0.3s;
+  transition: background 0.3s, transform 0.2s, box-shadow 0.2s, border-color 0.3s;
   min-width: 0;
   height: 40px;
   box-sizing: border-box;
@@ -113,12 +122,15 @@ h1 {
 }
 
 .filing-type-option:hover {
-  border-color: #007bff;
+  border-color: var(--primary);
+  background: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .filing-type-option input[type="radio"]:checked + .filing-type-label {
-  color: #007bff;
-  font-weight: bold;
+  color: var(--primary-dark);
+  font-weight: 600;
 }
 
 .filing-type-option input[type="radio"]:checked {
@@ -141,34 +153,50 @@ h1 {
 
 .state-input input {
   padding: 10px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--gray-300);
   border-radius: 5px;
   font-size: 16px;
   flex: 1;
   min-width: 200px;
+  transition: border 0.3s, box-shadow 0.3s;
+}
+
+.state-input input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
 }
 
 .state-input button {
   padding: 10px 20px;
-  background: #007bff;
+  background: var(--primary);
   color: white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
   font-size: 16px;
-  transition: background 0.3s;
+  transition: background 0.3s, transform 0.2s, box-shadow 0.2s;
 }
 
 .state-input button:hover {
-  background: #0056b3;
+  background: var(--primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .selected-states-section {
   margin-top: 20px;
   padding: 15px;
-  background: #f8f9fa;
+  background: #ffffff;
   border-radius: 8px;
-  border: 1px solid #dee2e6;
+  border: 1px solid var(--gray-300);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.3s, transform 0.2s;
+}
+
+.selected-states-section:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .selected-states-summary {
@@ -246,18 +274,19 @@ h1 {
 }
 
 .view-states-btn {
-  background: #6c757d;
+  background: var(--accent);
   color: white;
   border: none;
   border-radius: 4px;
   padding: 4px 8px;
   font-size: 11px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.3s, transform 0.2s;
 }
 
 .view-states-btn:hover {
-  background: #5a6268;
+  background: #0891b2;
+  transform: translateY(-2px);
 }
 
 .state-count {
@@ -568,6 +597,7 @@ h1 {
   width: 90%;
   max-width: 500px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  animation: fadeIn 0.3s ease;
 }
 
 .modal-header {
@@ -627,11 +657,12 @@ h1 {
   padding: 4px 8px;
   font-size: 12px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.2s, transform 0.2s;
 }
 
 .modal-remove-btn:hover {
   background: #c82333;
+  transform: translateY(-2px);
 }
 
 @keyframes slideInRight {
@@ -642,6 +673,11 @@ h1 {
 @keyframes slideOutRight {
   from { transform: translateX(0); opacity: 1; }
   to { transform: translateX(100%); opacity: 0; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .action-buttons {
@@ -656,29 +692,29 @@ h1 {
   border-radius: 5px;
   cursor: pointer;
   font-size: 16px;
-  transition: all 0.3s;
+  transition: background 0.3s, transform 0.2s, box-shadow 0.2s;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .action-button:hover {
-  transform: translateY(-1px);
+  transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
 .select-all-btn {
-  background: #007bff;
+  background: var(--primary);
   color: white;
 }
 
 .select-all-btn:hover {
-  background: #0056b3;
+  background: var(--primary-dark);
 }
 
 .reset-all-btn {
-  background: #6c757d;
+  background: var(--gray-600);
   color: white;
 }
 
 .reset-all-btn:hover {
-  background: #5a6268;
+  background: #374151;
 }
