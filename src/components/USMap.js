@@ -2,6 +2,14 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { stateFilingData } from '../data/stateFilingData';
 import { getConditionalText } from '../data/stateFilingData';
 
+// Shared configuration for filing type labels
+const formTypes = [
+  { key: '1120S', name: 'S Corporation (1120S)' },
+  { key: '1065', name: 'Partnership (1065)' },
+  { key: '1120', name: 'C Corporation (1120)' },
+  { key: '1040', name: 'Individual (1040)' }
+];
+
 const USMap = ({ selectedStates, filingType, onStateClick }) => {
   const svgContainerRef = useRef(null);
   const [svgLoaded, setSvgLoaded] = useState(false);
@@ -233,18 +241,11 @@ const USMap = ({ selectedStates, filingType, onStateClick }) => {
         }
         
         // Add filing requirements with status indicators
-        const formTypes = [
-          { key: '1120S', name: 'S Corporation (1120S)' },
-          { key: '1065', name: 'Partnership (1065)' },
-          { key: '1120', name: 'C Corporation (1120)' },
-          { key: '1040', name: 'Individual (1040)' }
-        ];
-        
         formTypes.forEach(form => {
           const status = stateData.forms[form.key];
-          const statusClass = status === 'required' ? 'status-required' : 
+          const statusClass = status === 'required' ? 'status-required' :
                             status === 'conditional' ? 'status-conditional' : 'status-not-required';
-          const statusText = status === 'required' ? 'Required' : 
+          const statusText = status === 'required' ? 'Required' :
                            status === 'conditional' ? 'Conditional' : 'Not Required';
           
           tooltipContent += `
@@ -259,21 +260,23 @@ const USMap = ({ selectedStates, filingType, onStateClick }) => {
         const tooltipElement = document.createElement('div');
         tooltipElement.className = 'state-tooltip';
         tooltipElement.innerHTML = tooltipContent;
-        tooltipElement.style.position = 'absolute';
-        tooltipElement.style.left = e.pageX + 15 + 'px';
-        tooltipElement.style.top = e.pageY - 15 + 'px';
-        tooltipElement.style.background = 'white';
-        tooltipElement.style.color = '#495057';
-        tooltipElement.style.padding = '25px';
-        tooltipElement.style.borderRadius = '12px';
-        tooltipElement.style.fontSize = '14px';
-        tooltipElement.style.zIndex = '1000';
-        tooltipElement.style.pointerEvents = 'none';
-        tooltipElement.style.boxShadow = '0 8px 32px rgba(0,0,0,0.15)';
-        tooltipElement.style.border = '1px solid #e9ecef';
-        tooltipElement.style.minWidth = '400px';
-        tooltipElement.style.maxWidth = '450px';
-        tooltipElement.style.lineHeight = '1.6';
+        Object.assign(tooltipElement.style, {
+          position: 'absolute',
+          left: `${e.pageX + 15}px`,
+          top: `${e.pageY - 15}px`,
+          background: 'white',
+          color: '#495057',
+          padding: '25px',
+          borderRadius: '12px',
+          fontSize: '14px',
+          zIndex: '1000',
+          pointerEvents: 'none',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+          border: '1px solid #e9ecef',
+          minWidth: '400px',
+          maxWidth: '450px',
+          lineHeight: '1.6'
+        });
         
         document.body.appendChild(tooltipElement);
         setTooltip(tooltipElement);
@@ -443,9 +446,7 @@ const USMap = ({ selectedStates, filingType, onStateClick }) => {
           
           // Add state classes and event listeners
           const states = svg.querySelectorAll('path[id]');
-          let labeledStates = 0;
-          let tooltipStates = 0;
-          
+
           states.forEach(state => {
             // Remove any existing fill colors and styles from SVG
             state.removeAttribute('style');
@@ -461,23 +462,14 @@ const USMap = ({ selectedStates, filingType, onStateClick }) => {
             state.classList.add('state', 'clickable');
             
             // Add state abbreviation labels
-            if (addStateLabel(state)) {
-              labeledStates++;
-            }
-            
+            addStateLabel(state);
+
             // Add hover tooltip
             addStateTooltip(state);
-            tooltipStates++;
-            
+
             // Add click functionality
             addStateClickHandler(state);
-            
-            console.log(`Initialized ${state.id} with fill: ${state.style.fill}`);
           });
-          
-          console.log(`Loaded ${states.length} states from SVG`);
-          console.log(`Added labels to ${labeledStates} states`);
-          console.log(`Added tooltips to ${tooltipStates} states`);
         }
         
         // Add legend overlay
