@@ -2,14 +2,6 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { stateFilingData } from '../data/stateFilingData';
 import { getConditionalText } from '../data/stateFilingData';
 
-// Shared configuration for filing type labels
-const formTypes = [
-  { key: '1120S', name: 'S Corporation (1120S)' },
-  { key: '1065', name: 'Partnership (1065)' },
-  { key: '1120', name: 'C Corporation (1120)' },
-  { key: '1040', name: 'Individual (1040)' }
-];
-
 const USMap = ({ selectedStates, filingType, onStateClick }) => {
   const svgContainerRef = useRef(null);
   const [svgLoaded, setSvgLoaded] = useState(false);
