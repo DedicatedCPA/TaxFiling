@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { stateFilingData } from '../data/stateFilingData';
 import USMap from './USMap';
 import StatesModal from './StatesModal';
@@ -12,11 +12,14 @@ const TaxFilingTool = () => {
   const [modalStates, setModalStates] = useState([]);
 
   // State name to abbreviation mapping
-  const stateNameToAbbr = {};
-  Object.keys(stateFilingData).forEach(abbr => {
-    stateNameToAbbr[stateFilingData[abbr].name.toLowerCase()] = abbr;
-    stateNameToAbbr[abbr.toLowerCase()] = abbr;
-  });
+  const stateNameToAbbr = useMemo(() => {
+    const mapping = {};
+    Object.keys(stateFilingData).forEach(abbr => {
+      mapping[stateFilingData[abbr].name.toLowerCase()] = abbr;
+      mapping[abbr.toLowerCase()] = abbr;
+    });
+    return mapping;
+  }, []);
 
   const addState = () => {
     const stateInputTrimmed = stateInput.trim();
@@ -276,12 +279,6 @@ const TaxFilingTool = () => {
             onClick={resetAll}
           >
             Reset All
-          </button>
-          <button 
-            className="action-button test-modal-btn" 
-            onClick={() => showStatesModal('required')}
-          >
-            Test Modal
           </button>
         </div>
       </div>
