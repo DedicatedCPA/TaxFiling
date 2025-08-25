@@ -13,7 +13,8 @@ const formTypes = [
 const USMap = ({ selectedStates, filingType, onStateClick }) => {
   const svgContainerRef = useRef(null);
   const [svgLoaded, setSvgLoaded] = useState(false);
-  const [tooltip, setTooltip] = useState(null);
+  // Use a ref instead of state for tooltip to avoid stale closures
+  const tooltipRef = useRef(null);
 
   // Helper functions defined first
   const isStateSuitableForText = useCallback((stateElement) => {
@@ -184,15 +185,21 @@ const USMap = ({ selectedStates, filingType, onStateClick }) => {
     const stateId = stateElement.id;
     if (stateId && stateFilingData[stateId]) {
       const stateData = stateFilingData[stateId];
-      
+
       stateElement.addEventListener('mouseenter', (e) => {
+        // Remove any existing tooltip before creating a new one
+        if (tooltipRef.current) {
+          document.body.removeChild(tooltipRef.current);
+          tooltipRef.current = null;
+        }
+
         // Create comprehensive tooltip content
         let tooltipContent = `<div class="tooltip-header">${stateData.name} (${stateId})</div>`;
-        
+
         // Add warnings and advisories
         let hasWarnings = false;
         let warningsContent = '';
-        
+
         if (stateData.cityReturns) {
           hasWarnings = true;
           if (stateData.cityReturns.type === 'all') {
@@ -209,7 +216,7 @@ const USMap = ({ selectedStates, filingType, onStateClick }) => {
             `;
           }
         }
-        
+
         // Add conditional filing note if applicable
         const hasConditional = Object.values(stateData.forms).some(status => status === 'conditional');
         if (hasConditional) {
@@ -235,19 +242,25 @@ const USMap = ({ selectedStates, filingType, onStateClick }) => {
         } else if (warningsContent) {
           warningsContent = `<div style="margin-bottom: 20px;">${warningsContent}</div>`;
         }
-        
+
         if (hasWarnings) {
           tooltipContent += warningsContent;
         }
-        
+
         // Add filing requirements with status indicators
+        const formTypes = [
+          { key: '1120S', name: 'S Corporation (1120S)' },
+          { key: '1065', name: 'Partnership (1065)' },
+          { key: '1120', name: 'C Corporation (1120)' },
+          { key: '1040', name: 'Individual (1040)' }
+        ];
         formTypes.forEach(form => {
           const status = stateData.forms[form.key];
           const statusClass = status === 'required' ? 'status-required' :
                             status === 'conditional' ? 'status-conditional' : 'status-not-required';
           const statusText = status === 'required' ? 'Required' :
                            status === 'conditional' ? 'Conditional' : 'Not Required';
-          
+
           tooltipContent += `
             <div class="tooltip-row">
               <span class="form-name">${form.name}:</span>
@@ -255,11 +268,26 @@ const USMap = ({ selectedStates, filingType, onStateClick }) => {
             </div>
           `;
         });
-        
+
         // Create tooltip element
         const tooltipElement = document.createElement('div');
         tooltipElement.className = 'state-tooltip';
         tooltipElement.innerHTML = tooltipContent;
+        tooltipElement.style.position = 'absolute';
+        tooltipElement.style.left = e.pageX + 15 + 'px';
+        tooltipElement.style.top = e.pageY - 15 + 'px';
+        tooltipElement.style.background = 'white';
+        tooltipElement.style.color = '#495057';
+        tooltipElement.style.padding = '25px';
+        tooltipElement.style.borderRadius = '12px';
+        tooltipElement.style.fontSize = '14px';
+        tooltipElement.style.zIndex = '1000';
+        tooltipElement.style.pointerEvents = 'none';
+        tooltipElement.style.boxShadow = '0 8px 32px rgba(0,0,0,0.15)';
+        tooltipElement.style.border = '1px solid #e9ecef';
+        tooltipElement.style.minWidth = '400px';
+        tooltipElement.style.maxWidth = '450px';
+        tooltipElement.style.lineHeight = '1.6';
         Object.assign(tooltipElement.style, {
           position: 'absolute',
           left: `${e.pageX + 15}px`,
@@ -279,60 +307,61 @@ const USMap = ({ selectedStates, filingType, onStateClick }) => {
         });
         
         document.body.appendChild(tooltipElement);
-        setTooltip(tooltipElement);
+        tooltipRef.current = tooltipElement;
       });
-      
+
       stateElement.addEventListener('mousemove', (e) => {
+        const tooltip = tooltipRef.current;
         if (tooltip) {
           const tooltipRect = tooltip.getBoundingClientRect();
           const viewportWidth = window.innerWidth;
           const viewportHeight = window.innerHeight;
-          
+
           let left = e.pageX + 15;
           let top = e.pageY - 15;
-          
+
           // Adjust horizontal position if tooltip would go off-screen
           if (left + tooltipRect.width > viewportWidth - 20) {
             left = e.pageX - tooltipRect.width - 15;
           }
-          
+
           // Adjust vertical position if tooltip would go off-screen
           if (top + tooltipRect.height > viewportHeight - 20) {
             top = e.pageY - tooltipRect.height - 15;
           }
-          
+
           tooltip.style.left = left + 'px';
           tooltip.style.top = top + 'px';
         }
       });
-      
+
       stateElement.addEventListener('mouseleave', () => {
-        if (tooltip) {
-          document.body.removeChild(tooltip);
-          setTooltip(null);
+        if (tooltipRef.current) {
+          document.body.removeChild(tooltipRef.current);
+          tooltipRef.current = null;
         }
       });
     }
-  }, [tooltip]);
+  }, []);
 
   const addStateClickHandler = useCallback((stateElement) => {
     const stateId = stateElement.id;
-    
-    stateElement.addEventListener('click', (e) => {
+
+    stateElement.addEventListener('click', () => {
       // Prevent tooltip from interfering with click
-      if (tooltip) {
-        document.body.removeChild(tooltip);
-        setTooltip(null);
+      if (tooltipRef.current) {
+        document.body.removeChild(tooltipRef.current);
+        tooltipRef.current = null;
       }
-      
+
       // Clear any hover styles that might be persisting
       stateElement.style.strokeWidth = '';
       stateElement.style.stroke = '';
-      
+
       // Call the parent component's click handler
       onStateClick(stateId);
     });
-  }, [tooltip, onStateClick]);
+  }, [onStateClick]);
 
   const addLegendOverlay = useCallback(() => {
     if (!svgContainerRef.current) return;
