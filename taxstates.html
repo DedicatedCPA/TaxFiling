@@ -1,0 +1,2310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>State Filing Requirements Tool</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        .form-section {
+            margin-bottom: 30px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .form-section h3 {
+            margin-top: 0;
+            color: #495057;
+            margin-bottom: 15px;
+        }
+        
+        .form-section h4 {
+            color: #6c757d;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        
+        .form-section p {
+            color: #6c757d;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        
+        .filing-type-selector {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 10px;
+            margin-top: 15px;
+            justify-content: space-between;
+        }
+        
+        .side-by-side-container {
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+        }
+        
+        .side-by-side-container > div {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        @media (max-width: 768px) {
+            .side-by-side-container {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .filing-type-selector {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            
+            .filing-type-option {
+                flex: none;
+                min-width: calc(50% - 4px);
+            }
+        }
+        
+        .filing-type-option {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            padding: 7px 10px;
+            background: white;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            transition: all 0.3s;
+            min-width: 0;
+            height: 40px;
+            box-sizing: border-box;
+        }
+        
+        /* Custom widths for each filing type to accommodate text length */
+        .filing-type-option:nth-child(1) { /* 1120S - S Corporation */
+            flex: 1.4;
+        }
+        
+        .filing-type-option:nth-child(2) { /* 1065 - Partnership */
+            flex: 1.2;
+        }
+        
+        .filing-type-option:nth-child(3) { /* 1120 - C Corporation */
+            flex: 1.2;
+        }
+        
+        .filing-type-option:nth-child(4) { /* 1040 - Individual */
+            flex: 1.0;
+        }
+        
+        .filing-type-option:hover {
+            border-color: #007bff;
+        }
+        
+        .filing-type-option input[type="radio"]:checked + .filing-type-label {
+            color: #007bff;
+            font-weight: bold;
+        }
+        
+        .filing-type-option input[type="radio"]:checked {
+            accent-color: #007bff;
+        }
+        
+        .filing-type-label {
+            font-size: 13px;
+            color: #495057;
+            white-space: nowrap;
+        }
+        
+        .state-input {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .state-input input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .state-input button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        
+        .state-input button:hover {
+            background: #0056b3;
+        }
+        
+        .selected-states-section {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .selected-states-summary {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .total-count {
+            text-align: center;
+            padding: 10px;
+            background: #e3f2fd;
+            border-radius: 6px;
+            border: 1px solid #bbdefb;
+            margin-bottom: 15px;
+        }
+        
+        .total-count h5 {
+            margin: 0;
+            color: #1976d2;
+            font-size: 16px;
+        }
+        
+        .states-buckets {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .bucket {
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+        }
+        
+        .bucket-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid;
+        }
+        
+        .bucket h5 {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .filing-required-bucket .bucket-header {
+            border-bottom-color: #28a745;
+        }
+        
+        .filing-required-bucket h5 {
+            color: #28a745;
+        }
+        
+        .conditional-bucket .bucket-header {
+            border-bottom-color: #ffc107;
+        }
+        
+        .conditional-bucket h5 {
+            color: #ffc107;
+        }
+        
+        .no-filing-bucket .bucket-header {
+            border-bottom-color: #6c757d;
+        }
+        
+        .no-filing-bucket h5 {
+            color: #6c757d;
+        }
+        
+        .view-states-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .view-states-btn:hover {
+            background: #5a6268;
+        }
+        
+        .state-count {
+            color: #6c757d;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        
+        .bucket-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 3px;
+            align-items: center;
+            line-height: 1.3;
+            min-height: 20px;
+        }
+        
+        .state-tag {
+            background: none;
+            padding: 0;
+            border: none;
+            font-size: 12px;
+            color: #495057;
+            font-weight: 500;
+        }
+        
+        .state-tag button {
+            background: none;
+            border: none;
+            color: #dc3545;
+            cursor: pointer;
+            font-size: 12px;
+            padding: 0;
+            line-height: 1;
+            font-weight: bold;
+            margin-left: 2px;
+        }
+        
+        .state-tag:not(:last-child)::after {
+            content: ",";
+            color: #6c757d;
+            margin-right: 3px;
+        }
+        
+        .filing-summary {
+            padding: 15px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .filing-summary h5 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #495057;
+            font-size: 16px;
+        }
+        
+        .city-returns-info {
+            margin-top: 15px;
+            padding: 12px;
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #856404;
+        }
+        
+        .map-container {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .usa-map {
+            width: 115%;
+            height: auto;
+            min-height: 920px;
+        }
+        
+        #svgContainer {
+            margin: 20px 0;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 1px solid #dee2e6;
+            position: relative;
+            min-height: 900px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #svgContainer svg {
+            width: 115%;
+            height: auto;
+            min-height: 920px;
+            max-width: 115%;
+            display: block;
+            margin: 0 auto;
+        }
+        
+        .state {
+            fill: #f0f0f0; /* Light grey default */
+            stroke: #333;
+            stroke-width: 0.5;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+
+        
+        /* Simple hover effect - just blue border */
+        .state:hover {
+            stroke-width: 2;
+            stroke: #007bff;
+        }
+        
+        /* Selected state colors */
+        .state.filing-required {
+            fill: #28a745;
+        }
+        
+        .state.no-filing {
+            fill: #6c757d;
+        }
+        
+        .state.conditional-filing {
+            fill: #ffc107;
+        }
+        
+        /* Light blue overlay tint for all states on hover */
+        .state {
+            position: relative;
+        }
+        
+        .state:hover {
+            filter: brightness(1.1) saturate(1.1);
+        }
+        
+
+        
+        .legend-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border: 1px solid #e9ecef;
+            z-index: 10;
+            backdrop-filter: blur(5px);
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            margin-bottom: 8px;
+            color: #495057;
+            font-weight: 500;
+        }
+        
+        .legend-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border: 1px solid #dee2e6;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+        
+
+        
+        .form-type {
+            font-weight: bold;
+            color: #495057;
+        }
+        
+        .filing-status {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .filing-status.required {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .filing-status.not-required {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .filing-status.conditional {
+            background: #ffc107;
+            color: #856404;
+        }
+        
+        /* State label styling - always black with no borders */
+        #svgContainer text {
+            pointer-events: none;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            fill: #000000 !important;
+            color: #000000 !important;
+            text-shadow: none;
+            letter-spacing: 0.5px;
+        }
+        
+
+        
+        /* Enhanced tooltip styling */
+        .state-tooltip {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .tooltip-header {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e9ecef;
+            color: #2c3e50;
+        }
+        
+        .tooltip-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 8px 0;
+            border-bottom: 1px solid #f8f9fa;
+        }
+        
+        .form-name {
+            font-weight: 600;
+            color: #495057;
+            font-size: 14px;
+        }
+        
+        .status {
+            font-weight: 700;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .status-required {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+        
+        .status-conditional {
+            background: linear-gradient(135deg, #ffc107, #fd7e14);
+            color: white;
+        }
+        
+        .status-not-required {
+            background: linear-gradient(135deg, #6c757d, #495057);
+            color: white;
+        }
+        
+        .tooltip-note {
+            margin-top: 20px;
+            padding: 12px;
+            background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #856404;
+            box-shadow: 0 2px 8px rgba(255, 193, 7, 0.2);
+        }
+        
+        .city-returns-warning {
+            margin-top: 15px;
+            padding: 12px;
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            border: 1px solid #dc3545;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #721c24;
+            box-shadow: 0 2px 8px rgba(220, 53, 69, 0.2);
+        }
+        
+        .city-returns-advisory {
+            margin-top: 15px;
+            padding: 12px;
+            background: linear-gradient(135deg, #d1ecf1, #bee5eb);
+            border: 1px solid #17a2b8;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #0c5460;
+            box-shadow: 0 2px 8px rgba(23, 162, 184, 0.2);
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 20px 15px 20px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .modal-header h3 {
+            margin: 0;
+            color: #495057;
+            font-size: 18px;
+        }
+        
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+        }
+        
+        .close:hover {
+            color: #000;
+        }
+        
+        .modal-body {
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .modal-state-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #f8f9fa;
+        }
+        
+        .modal-state-item:last-child {
+            border-bottom: none;
+        }
+        
+        .modal-state-name {
+            font-weight: 500;
+            color: #495057;
+        }
+        
+        .modal-remove-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .modal-remove-btn:hover {
+            background: #c82333;
+        }
+        
+        /* State click confirmation animations */
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes slideOutRight {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>State Filing Requirements Tool</h1>
+        
+        <!-- File Protocol Warning -->
+        <div id="fileProtocolWarning" style="display: none; background: #fff3cd; border: 1px solid #ffeaa7; color: #856404; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
+            <strong>⚠️ Important:</strong> This tool works best when served by a web server. 
+            <br><br>
+            <strong>Quick Fix:</strong> Open Terminal/Command Prompt in this directory and run:
+            <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px; padding: 10px; margin: 10px 0; font-family: monospace; font-size: 14px; color: #495057;">
+                python3 -m http.server 8000
+            </div>
+            Then visit <code>http://localhost:8000</code> in your browser.
+        </div>
+        
+        <div class="form-section">
+            <h3>Tax Filing Configuration</h3>
+            <p>Configure your client's tax filing requirements and select the states where your client lives or has income. The map below will automatically update to show filing requirements for each selected state.</p>
+            
+            <div class="side-by-side-container">
+                <div>
+                    <h4>Select Filing Type</h4>
+                    <p>Choose the type of tax filing to determine state requirements:</p>
+                    
+                    <div class="filing-type-selector">
+                        <label class="filing-type-option">
+                            <input type="radio" name="filingType" value="1120S" checked>
+                            <span class="filing-type-label">1120S - S Corporation</span>
+                        </label>
+                        <label class="filing-type-option">
+                            <input type="radio" name="filingType" value="1065">
+                            <span class="filing-type-label">1065 - Partnership</span>
+                        </label>
+                        <label class="filing-type-option">
+                            <input type="radio" name="filingType" value="1120">
+                            <span class="filing-type-label">1120 - C Corporation</span>
+                        </label>
+                        <label class="filing-type-option">
+                            <input type="radio" name="filingType" value="1040">
+                            <span class="filing-type-label">1040 - Individual</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4>Select Client States</h4>
+                    <p>Enter the states where your client lives or has income:</p>
+                    
+                    <div class="state-input">
+                        <input type="text" id="stateInput" placeholder="Enter state name or abbreviation (e.g., CA, California)">
+                        <button onclick="addState()">Add State</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Selected States Summary Section -->
+            <div class="selected-states-section" id="selectedStatesSection" style="display: none;">
+                <div class="selected-states-summary">
+                    <div class="total-count" id="totalCount"></div>
+                    <div class="states-buckets">
+                        <div class="bucket filing-required-bucket">
+                            <div class="bucket-header">
+                                <h5>Filing Required</h5>
+                                <button class="view-states-btn" onclick="showStatesModal('required')">View States</button>
+                            </div>
+                            <div class="bucket-content" id="requiredStatesList"></div>
+                        </div>
+                        <div class="bucket conditional-bucket">
+                            <div class="bucket-header">
+                                <h5>Conditional Filing</h5>
+                                <button class="view-states-btn" onclick="showStatesModal('conditional')">View States</button>
+                            </div>
+                            <div class="bucket-content" id="conditionalStatesList"></div>
+                        </div>
+                        <div class="bucket no-filing-bucket">
+                            <div class="bucket-header">
+                                <h5>No Filing Required</h5>
+                                <button class="view-states-btn" onclick="showStatesModal('no-filing')">View States</button>
+                            </div>
+                            <div class="bucket-content" id="noFilingStatesList"></div>
+                        </div>
+                    </div>
+                    <div class="filing-summary" id="filingSummary"></div>
+                </div>
+            </div>
+            </div>
+            
+            <div style="text-align: right; margin-top: 20px;">
+                <button onclick="selectAll(event)" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; transition: all 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-right: 10px;" onmouseover="this.style.background='#0056b3'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.15)'" onmouseout="this.style.background='#007bff'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.1)'">Select All</button>
+                <button onclick="resetAll(event)" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; transition: all 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" onmouseover="this.style.background='#5a6268'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.15)'" onmouseout="this.style.background='#6c757d'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.1)'">Reset All</button>
+                <button onclick="showStatesModal('required')" style="padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin-left: 10px;">Test Modal</button>
+
+            </div>
+        </div>
+
+        <div class="map-container">
+            <h3>State Filing Requirements Map</h3>
+            
+            <div id="svgContainer"></div>
+        </div>
+        
+        <!-- States Modal -->
+        <div id="statesModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="modalTitle">States</h3>
+                    <span class="close" onclick="closeStatesModal()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <div id="modalStatesList"></div>
+                </div>
+            </div>
+        </div>
+        
+
+    </div>
+
+    <script>
+        // Comprehensive state filing requirements data
+        const stateFilingData = {
+            'AL': { name: 'Alabama', forms: { '1120S': 'required', '1065': 'required', '1120': 'required', '1040': 'required' }},
+            'AK': { name: 'Alaska', forms: { '1120S': 'not-required', '1065': 'not-required', '1120': 'required', '1040': 'not-required' }},
+            'AZ': { name: 'Arizona', forms: { '1120S': 'required', '1065': 'required', '1120': 'required', '1040': 'required' }},
+            'AR': { name: 'Arkansas', forms: { '1120S': 'required', '1065': 'required', '1120': 'required', '1040': 'required' }},
+            'CA': { name: 'California', forms: { '1120S': 'required', '1065': 'required', '1120': 'required', '1040': 'required' }},
+            'CO': { name: 'Colorado', forms: { '1120S': 'required', '1065': 'required', '1120': 'required', '1040': 'required' }},
+            'CT': { name: 'Connecticut', forms: { '1120S': 'required', '1065': 'required', '1120': 'required', '1040': 'required' }},
+            'DE': { name: 'Delaware', forms: { '1120S': 'required', '1065': 'required', '1120': 'required', '1040': 'required' }},
+            'DC': { name: 'District of Columbia', forms: { '1120S': 'required', '1065': 'required', '1120': 'required', '1040': 'required' }},
+            'FL': { name: 'Florida', forms: { '1120S': 'not-required', '1065': 'not-required', '1120': 'required', '1040': 'not-required' }},
+            'GA': { name: 'Georgia', forms: { '1120S': 'required', '1065': 'required', '1120': 'required', '1040': 'required' }},
+            'HI': { name: 'Hawaii', forms: { '1120S': 'required', '1065': 'required', '1120': 'required', '1040': 'required' }},
+            'ID': { name: 'Idaho', forms: { '1120S': 'required', '1065': 'required', '1120': 'required', '1040': 'required' }},
+            'IL': { name: 'Illinois', forms: { '1120S': 'required', '1065': 'required', '1120': 'required', '1040': 'required' }},
+            'IN': { name: 'Indiana', forms: { '1120S': 'required', '1065': 'required', '1120': 'required', '1040': 'required' }},
+            'IA': { name: 'Iowa', forms: { '1120S': 'required', '1065': 'required', '1120': 'required', '1040': 'required' }},
+            'KS': { name: 'Kansas', forms: { '1120S': 'not-required', '1065': 'not-required', '1120': 'required', '1040': 'required' }},
+            'KY': { name: 'Kentucky', forms: { '1120S': 'required', '1065': 'required', '1120': 'required', '1040': 'required' }, cityReturns: { type: 'specific', cities: ['Lexington', 'Louisville'] }},
+            'LA': { name: 'Louisiana', forms: { '1120S': 'conditional', '1065': 'conditional', '1120': 'required', '1040': 'conditional' }},
+            'ME': { name: 'Maine', forms: { '1120S': 'conditional', '1065': 'conditional', '1120': 'required', '1040': 'conditional' }},
+            'MD': { name: 'Maryland', forms: { '1120S': 'required', '1065': 'required', '1120': 'required', '1040': 'required' }, cityReturns: { type: 'all', cities: [] }},
+            'MA': { name: 'Massachusetts', forms: { '1120S': 'required', '1065': 'required', '1120': 'required', '1040': 'required' }},
+            'MI': { name: 'Michigan', forms: { '1120S': 'not-required', '1065': 'not-required', '1120': 'required', '1040': 'required' }, cityReturns: { type: 'all', cities: [] }},
+            'MN': { name: 'Minnesota', forms: { '1120S': 'required', '1065': 'required', '1120': 'required', '1040': 'required' }},
+            'MS': { name: 'Mississippi', forms: { '1120S': 'required', '1065': 'required', '1120': 'required', '1040': 'required' }},
+            'MO': { name: 'Missouri', forms: { '1120S': 'required', '1065': 'required', '1120': 'required', '1040': 'required' }, cityReturns: { type: 'specific', cities: ['Kansas City'] }},
+            'MT': { name: 'Montana', forms: { '1120S': 'required', '1065': 'required', '1120': 'required', '1040': 'required' }},
+            'NE': { name: 'Nebraska', forms: { '1120S': 'required', '1065': 'required', '1120': 'required', '1040': 'required' }},
+            'NV': { name: 'Nevada', forms: { '1120S': 'not-required', '1065': 'not-required', '1120': 'required', '1040': 'not-required' }},
+            'NH': { name: 'New Hampshire', forms: { '1120S': 'conditional', '1065': 'conditional', '1120': 'required', '1040': 'conditional' }},
+            'NJ': { name: 'New Jersey', forms: { '1120S': 'required', '1065': 'required', '1120': 'required', '1040': 'required' }},
+            'NM': { name: 'New Mexico', forms: { '1120S': 'required', '1065': 'required', '1120': 'required', '1040': 'required' }},
+            'NY': { name: 'New York', forms: { '1120S': 'required', '1065': 'required', '1120': 'required', '1040': 'required' }, cityReturns: { type: 'specific', cities: ['New York City', 'Yonkers'] }},
+            'NC': { name: 'North Carolina', forms: { '1120S': 'required', '1065': 'required', '1120': 'required', '1040': 'required' }},
+            'ND': { name: 'North Dakota', forms: { '1120S': 'required', '1065': 'required', '1120': 'required', '1040': 'required' }},
+            'OH': { name: 'Ohio', forms: { '1120S': 'conditional', '1065': 'conditional', '1120': 'required', '1040': 'conditional' }, cityReturns: { type: 'all', cities: [] }},
+            'OK': { name: 'Oklahoma', forms: { '1120S': 'required', '1065': 'required', '1120': 'required', '1040': 'required' }},
+            'OR': { name: 'Oregon', forms: { '1120S': 'required', '1065': 'required', '1120': 'required', '1040': 'required' }, cityReturns: { type: 'specific', cities: ['Portland'] }},
+            'PA': { name: 'Pennsylvania', forms: { '1120S': 'required', '1065': 'required', '1120': 'required', '1040': 'required' }, cityReturns: { type: 'specific', cities: ['Philadelphia'] }},
+            'RI': { name: 'Rhode Island', forms: { '1120S': 'required', '1065': 'required', '1120': 'required', '1040': 'required' }},
+            'SC': { name: 'South Carolina', forms: { '1120S': 'required', '1065': 'required', '1120': 'required', '1040': 'required' }},
+            'SD': { name: 'South Dakota', forms: { '1120S': 'not-required', '1065': 'not-required', '1120': 'required', '1040': 'not-required' }},
+            'TN': { name: 'Tennessee', forms: { '1120S': 'required', '1065': 'required', '1120': 'required', '1040': 'not-required' }},
+            'TX': { name: 'Texas', forms: { '1120S': 'required', '1065': 'required', '1120': 'required', '1040': 'not-required' }},
+            'UT': { name: 'Utah', forms: { '1120S': 'conditional', '1065': 'conditional', '1120': 'required', '1040': 'conditional' }},
+            'VT': { name: 'Vermont', forms: { '1120S': 'required', '1065': 'required', '1120': 'required', '1040': 'required' }},
+            'VA': { name: 'Virginia', forms: { '1120S': 'required', '1065': 'required', '1120': 'required', '1040': 'required' }},
+            'WA': { name: 'Washington', forms: { '1120S': 'not-required', '1065': 'not-required', '1120': 'required', '1040': 'not-required' }},
+            'WV': { name: 'West Virginia', forms: { '1120S': 'required', '1065': 'required', '1120': 'required', '1040': 'required' }},
+            'WI': { name: 'Wisconsin', forms: { '1120S': 'required', '1065': 'required', '1120': 'required', '1040': 'required' }},
+            'WY': { name: 'Wyoming', forms: { '1120S': 'not-required', '1065': 'not-required', '1120': 'required', '1040': 'not-required' }}
+        };
+
+        let selectedStates = [];
+
+        // State name to abbreviation mapping
+        const stateNameToAbbr = {};
+        Object.keys(stateFilingData).forEach(abbr => {
+            stateNameToAbbr[stateFilingData[abbr].name.toLowerCase()] = abbr;
+            stateNameToAbbr[abbr.toLowerCase()] = abbr;
+        });
+
+        function addState() {
+            const input = document.getElementById('stateInput');
+            const stateInput = input.value.trim();
+            
+            if (!stateInput) return;
+            
+            let stateAbbr = null;
+            
+            // Check if it's an abbreviation
+            if (stateNameToAbbr[stateInput.toLowerCase()]) {
+                stateAbbr = stateNameToAbbr[stateInput.toLowerCase()];
+            }
+            
+            if (stateAbbr && !selectedStates.includes(stateAbbr)) {
+                selectedStates.push(stateAbbr);
+                input.value = '';
+                updateStateDisplay();
+                updateMap();
+            } else if (selectedStates.includes(stateAbbr)) {
+                alert('State already selected!');
+            } else {
+                alert('Invalid state name or abbreviation!');
+            }
+        }
+
+        function removeState(stateAbbr) {
+                    selectedStates = selectedStates.filter(s => s !== stateAbbr);
+        updateStateDisplay();
+        updateMap();
+        }
+
+        function updateStateDisplay() {
+            const section = document.getElementById('selectedStatesSection');
+            const totalCount = document.getElementById('totalCount');
+            const requiredStatesList = document.getElementById('requiredStatesList');
+            const conditionalStatesList = document.getElementById('conditionalStatesList');
+            const noFilingStatesList = document.getElementById('noFilingStatesList');
+            const filingSummary = document.getElementById('filingSummary');
+            
+            if (selectedStates.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+            
+            // Show the section
+            section.style.display = 'block';
+            
+            // Update total count
+            totalCount.innerHTML = `<h5>Total States Selected: ${selectedStates.length}</h5>`;
+            
+            // Get selected filing type
+            const selectedFilingType = document.querySelector('input[name="filingType"]:checked').value;
+            
+            // Count states for each bucket and display counts
+            let requiredCount = 0;
+            let conditionalCount = 0;
+            let notRequiredCount = 0;
+            
+            selectedStates.forEach(stateAbbr => {
+                const stateData = stateFilingData[stateAbbr];
+                const filingStatus = stateData.forms[selectedFilingType];
+                
+                if (filingStatus === 'required') {
+                    requiredCount++;
+                } else if (filingStatus === 'conditional') {
+                    conditionalCount++;
+                } else if (filingStatus === 'not-required') {
+                    notRequiredCount++;
+                }
+            });
+            
+            // Display counts in bucket headers
+            requiredStatesList.innerHTML = `<span class="state-count">${requiredCount} states</span>`;
+            conditionalStatesList.innerHTML = `<span class="state-count">${conditionalCount} states</span>`;
+            noFilingStatesList.innerHTML = `<span class="state-count">${notRequiredCount} states</span>`;
+            
+            // Update filing summary
+            updateFilingSummary();
+        }
+        
+        function updateFilingSummary() {
+            const filingSummary = document.getElementById('filingSummary');
+            const selectedFilingType = document.querySelector('input[name="filingType"]:checked').value;
+            
+            // Count different filing requirements
+            let requiredCount = 0;
+            let conditionalCount = 0;
+            let notRequiredCount = 0;
+            let cityReturnsRequired = 0;
+            let cityReturnsSpecific = 0;
+            let cityReturnsCities = [];
+            
+            selectedStates.forEach(stateAbbr => {
+                const stateData = stateFilingData[stateAbbr];
+                const filingStatus = stateData.forms[selectedFilingType];
+                
+                if (filingStatus === 'required') {
+                    requiredCount++;
+                } else if (filingStatus === 'conditional') {
+                    conditionalCount++;
+                } else if (filingStatus === 'not-required') {
+                    notRequiredCount++;
+                }
+                
+                // Check for city returns
+                if (stateData.cityReturns) {
+                    if (stateData.cityReturns.type === 'all') {
+                        cityReturnsRequired++;
+                    } else if (stateData.cityReturns.type === 'specific' && stateData.cityReturns.cities.length > 0) {
+                        cityReturnsSpecific++;
+                        cityReturnsCities.push(...stateData.cityReturns.cities.map(city => `${city}, ${stateAbbr}`));
+                    }
+                }
+            });
+            
+            // Create summary HTML - simplified since buckets show the counts
+            let summaryHTML = `
+                <h5>Additional Filing Information</h5>
+            `;
+            
+            // Add city returns information if applicable
+            if (cityReturnsRequired > 0 || cityReturnsSpecific > 0) {
+                summaryHTML += `
+                    <div class="city-returns-info">
+                        <strong>City Returns Required:</strong><br>
+                        ${cityReturnsRequired > 0 ? `• ${cityReturnsRequired} states require ALL cities to file<br>` : ''}
+                        ${cityReturnsSpecific > 0 ? `• ${cityReturnsSpecific} states require specific cities to file: ${cityReturnsCities.slice(0, 5).join(', ')}${cityReturnsCities.length > 5 ? ' and more...' : ''}` : ''}
+                    </div>
+                `;
+            }
+            
+            filingSummary.innerHTML = summaryHTML;
+        }
+        
+        // Modal functions
+        function showStatesModal(bucketType) {
+            console.log('showStatesModal called with:', bucketType);
+            
+            const modal = document.getElementById('statesModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalStatesList = document.getElementById('modalStatesList');
+            
+            if (!modal || !modalTitle || !modalStatesList) {
+                console.error('Modal elements not found:', { modal, modalTitle, modalStatesList });
+                return;
+            }
+            
+            // Set modal title based on bucket type
+            const titles = {
+                'required': 'Filing Required States',
+                'conditional': 'Conditional Filing States',
+                'no-filing': 'No Filing Required States'
+            };
+            modalTitle.textContent = titles[bucketType];
+            
+            // Get states for this bucket
+            const selectedFilingType = document.querySelector('input[name="filingType"]:checked').value;
+            const bucketStates = selectedStates.filter(stateAbbr => {
+                const stateData = stateFilingData[stateAbbr];
+                const filingStatus = stateData.forms[selectedFilingType];
+                
+                if (bucketType === 'required') return filingStatus === 'required';
+                if (bucketType === 'conditional') return filingStatus === 'conditional';
+                if (bucketType === 'no-filing') return filingStatus === 'not-required';
+                return false;
+            });
+            
+            console.log('Bucket states:', bucketStates);
+            
+            // Create modal content
+            modalStatesList.innerHTML = '';
+            bucketStates.forEach(stateAbbr => {
+                const stateData = stateFilingData[stateAbbr];
+                const stateItem = document.createElement('div');
+                stateItem.className = 'modal-state-item';
+                stateItem.innerHTML = `
+                    <span class="modal-state-name">${stateData.name} (${stateAbbr})</span>
+                    <button class="modal-remove-btn" onclick="removeState('${stateAbbr}'); closeStatesModal();">Remove</button>
+                `;
+                modalStatesList.appendChild(stateItem);
+            });
+            
+            // Show modal
+            modal.style.display = 'block';
+            console.log('Modal should now be visible');
+        }
+        
+        function closeStatesModal() {
+            console.log('closeStatesModal called');
+            const modal = document.getElementById('statesModal');
+            if (modal) {
+                modal.style.display = 'none';
+                console.log('Modal hidden');
+            } else {
+                console.error('Modal element not found');
+            }
+        }
+        
+        // Close modal when clicking outside of it
+        window.onclick = function(event) {
+            const modal = document.getElementById('statesModal');
+            if (event.target === modal) {
+                closeStatesModal();
+            }
+        }
+
+        function updateMap() {
+            console.log('updateMap called');
+            
+            // Clear any existing text positions for overlap detection
+            if (window.textPositions) {
+                window.textPositions = [];
+            }
+            
+            // Reset all states to default light grey
+            document.querySelectorAll('.state').forEach(stateElement => {
+                stateElement.classList.remove('filing-required', 'no-filing', 'conditional-filing');
+                // Ensure default color is applied with high priority
+                stateElement.style.setProperty('fill', '#f0f0f0', 'important');
+            });
+            
+            // Get selected filing type
+            const selectedFilingType = document.querySelector('input[name="filingType"]:checked').value;
+            console.log('Selected filing type:', selectedFilingType);
+            
+            // Color selected states based on filing requirements for the selected form type
+            selectedStates.forEach(stateAbbr => {
+                const stateElement = document.getElementById(stateAbbr);
+                if (stateElement) {
+                    const stateData = stateFilingData[stateAbbr];
+                    const filingStatus = stateData.forms[selectedFilingType];
+                    
+                    console.log(`Processing ${stateAbbr}: ${filingStatus}`);
+                    
+                    if (filingStatus === 'required') {
+                        stateElement.classList.add('filing-required');
+                        stateElement.style.fill = '#28a745';
+                        console.log(`Added filing-required class and green color to ${stateAbbr}`);
+                    } else if (filingStatus === 'conditional') {
+                        stateElement.classList.add('conditional-filing');
+                        stateElement.style.fill = '#ffc107';
+                        console.log(`Added conditional-filing class and yellow color to ${stateAbbr}`);
+                    } else if (filingStatus === 'not-required') {
+                        stateElement.classList.add('no-filing');
+                        stateElement.style.fill = '#6c757d';
+                        console.log(`Added no-filing class and gray color to ${stateAbbr}`);
+                    }
+                } else {
+                    console.log(`State element not found for ${stateAbbr}`);
+                }
+            });
+            
+
+            
+            console.log(`Updated map with ${selectedStates.length} selected states`);
+        }
+
+        // Function to update text colors based on state background colors
+        function updateTextColors() {
+            console.log('updateTextColors called');
+            
+            // Get all state text elements - try multiple selectors to be sure
+            let textElements = document.querySelectorAll('#svgContainer text[data-state-id]');
+            console.log(`Found ${textElements.length} text elements with data-state-id`);
+            
+            if (textElements.length === 0) {
+                // Fallback: try to find all text elements in the SVG
+                textElements = document.querySelectorAll('#svgContainer text');
+                console.log(`Fallback: Found ${textElements.length} total text elements`);
+            }
+            
+            textElements.forEach(textElement => {
+                const stateId = textElement.getAttribute('data-state-id') || textElement.textContent;
+                console.log(`Processing text element for state: ${stateId}`);
+                
+                if (stateId && stateId.length === 2) { // Valid state abbreviation
+                    const stateElement = document.getElementById(stateId);
+                    
+                    if (stateElement) {
+                        console.log(`Found state element for ${stateId}`);
+                        
+                        // Get the current fill color of the state
+                        let stateFill = stateElement.style.fill;
+                        console.log(`State ${stateId} style.fill: ${stateFill}`);
+                        
+                        // If no inline style, check computed style
+                        if (!stateFill || stateFill === '') {
+                            const computedStyle = getComputedStyle(stateElement);
+                            stateFill = computedStyle.fill;
+                            console.log(`State ${stateId} computed fill: ${stateFill}`);
+                        }
+                        
+                        // Also check for CSS classes that might affect the color
+                        let textColor = '#000000'; // Default to black
+                        
+                        if (stateElement.classList.contains('filing-required') || stateFill === '#28a745' || stateFill === 'rgb(40, 167, 69)') {
+                            // Green background - white text
+                            textColor = '#ffffff';
+                            console.log(`State ${stateId}: Green background, setting text to white`);
+                        } else if (stateElement.classList.contains('no-filing') || stateFill === '#6c757d' || stateFill === 'rgb(108, 117, 125)') {
+                            // Grey background - white text
+                            textColor = '#ffffff';
+                            console.log(`State ${stateId}: Grey background, setting text to white`);
+                        } else if (stateElement.classList.contains('conditional-filing') || stateFill === '#ffc107' || stateFill === 'rgb(255, 193, 7)') {
+                            // Yellow background - black text
+                            textColor = '#000000';
+                            console.log(`State ${stateId}: Yellow background, setting text to black`);
+                        } else {
+                            // Default light grey/white background - black text
+                            textColor = '#000000';
+                            console.log(`State ${stateId}: Default background, setting text to black`);
+                        }
+                        
+                        // Try a different approach - remove any existing fill attributes first
+                        textElement.removeAttribute('fill');
+                        
+                        // Update the text color with multiple methods to ensure it works
+                        textElement.style.setProperty('fill', textColor, 'important');
+                        textElement.setAttribute('fill', textColor);
+                        textElement.style.fill = textColor;
+                        
+                        // Also try setting the color directly on the SVG element
+                        if (textElement.ownerSVGElement) {
+                            const svgText = textElement.ownerSVGElement.querySelector(`text[data-state-id="${stateId}"]`);
+                            if (svgText) {
+                                svgText.style.setProperty('fill', textColor, 'important');
+                                svgText.setAttribute('fill', textColor);
+                            }
+                        }
+                        
+                        // Try a nuclear approach - recreate the text element if colors still aren't working
+                        setTimeout(() => {
+                            if (textElement.getAttribute('fill') !== textColor) {
+                                console.log(`Nuclear option: recreating text element for ${stateId}`);
+                                
+                                // Store the position and content
+                                const x = textElement.getAttribute('x');
+                                const y = textElement.getAttribute('y');
+                                const textContent = textElement.textContent;
+                                
+                                // Create a new text element
+                                const newText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                                newText.setAttribute('text-anchor', 'middle');
+                                newText.setAttribute('dominant-baseline', 'middle');
+                                newText.setAttribute('font-size', '12');
+                                newText.setAttribute('font-weight', 'bold');
+                                newText.setAttribute('fill', textColor);
+                                newText.setAttribute('data-state-id', stateId);
+                                newText.setAttribute('x', x);
+                                newText.setAttribute('y', y);
+                                newText.textContent = textContent;
+                                
+                                // Replace the old element
+                                textElement.parentNode.replaceChild(newText, textElement);
+                                
+                                console.log(`Recreated text element for ${stateId} with color ${textColor}`);
+                            }
+                        }, 100);
+                        
+                        // Force a repaint by temporarily changing and restoring
+                        textElement.style.display = 'none';
+                        textElement.offsetHeight; // Force reflow
+                        textElement.style.display = '';
+                        
+                        // Double-check the color was applied
+                        setTimeout(() => {
+                            if (textElement.getAttribute('fill') !== textColor) {
+                                console.log(`Retrying color update for ${stateId}`);
+                                textElement.style.setProperty('fill', textColor, 'important');
+                                textElement.setAttribute('fill', textColor);
+                            }
+                        }, 10);
+                        
+                        console.log(`Updated text color for ${stateId} to ${textColor}`);
+                        console.log(`Text element fill attribute: ${textElement.getAttribute('fill')}`);
+                        console.log(`Text element style.fill: ${textElement.style.fill}`);
+                    } else {
+                        console.log(`State element not found for ${stateId}`);
+                    }
+                }
+            });
+                }
+        
+        // Nuclear option: completely recreate all text elements with correct colors
+        function recreateAllTextElements() {
+            console.log('Nuclear option: recreating all text elements');
+            
+            // Get all existing text elements
+            const existingTexts = document.querySelectorAll('#svgContainer text[data-state-id]');
+            console.log(`Found ${existingTexts.length} existing text elements to recreate`);
+            
+            existingTexts.forEach(textElement => {
+                const stateId = textElement.getAttribute('data-state-id');
+                const x = textElement.getAttribute('x');
+                const y = textElement.getAttribute('y');
+                const textContent = textElement.textContent;
+                
+                // Determine the correct color based on state background
+                const stateElement = document.getElementById(stateId);
+                let textColor = '#000000'; // Default
+                
+                if (stateElement) {
+                    if (stateElement.classList.contains('filing-required')) {
+                        textColor = '#ffffff'; // White for green
+                    } else if (stateElement.classList.contains('no-filing')) {
+                        textColor = '#ffffff'; // White for grey
+                    } else if (stateElement.classList.contains('conditional-filing')) {
+                        textColor = '#000000'; // Black for yellow
+                    }
+                }
+                
+                // Create new text element
+                const newText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                newText.setAttribute('text-anchor', 'middle');
+                newText.setAttribute('dominant-baseline', 'middle');
+                newText.setAttribute('font-size', '12');
+                newText.setAttribute('font-weight', 'bold');
+                newText.setAttribute('fill', textColor);
+                newText.setAttribute('data-state-id', stateId);
+                newText.setAttribute('x', x);
+                newText.setAttribute('y', y);
+                newText.textContent = textContent;
+                
+                // Replace the old element
+                textElement.parentNode.replaceChild(newText, textElement);
+                
+                console.log(`Recreated text for ${stateId} with color ${textColor}`);
+            });
+        }
+        
+        function updateResults() {
+            const resultsDiv = document.getElementById('results');
+            const resultsContent = document.getElementById('resultsContent');
+            
+            if (selectedStates.length === 0) {
+                resultsDiv.style.display = 'none';
+                return;
+            }
+            
+            resultsDiv.style.display = 'block';
+            resultsContent.innerHTML = '';
+            
+            const selectedFilingType = document.querySelector('input[name="filingType"]:checked').value;
+            const filingTypeName = {
+                '1120S': 'S Corporation (1120S)',
+                '1065': 'Partnership (1065)',
+                '1120': 'C Corporation (1120)',
+                '1040': 'Individual (1040)'
+            }[selectedFilingType];
+            
+            resultsContent.innerHTML = `<h4>Filing Requirements for ${filingTypeName}</h4>`;
+            
+            selectedStates.forEach(stateAbbr => {
+                const stateData = stateFilingData[stateAbbr];
+                const stateResult = document.createElement('div');
+                stateResult.className = 'state-result';
+                
+                const filingStatus = stateData.forms[selectedFilingType];
+                
+                if (filingStatus === 'not-required') {
+                    stateResult.classList.add('no-filing');
+                } else if (filingStatus === 'conditional') {
+                    stateResult.classList.add('conditional-filing');
+                }
+                
+                const statusText = filingStatus === 'required' ? 'Filing Required' : 
+                                 filingStatus === 'not-required' ? 'No Filing Required' : 
+                                 'Conditional Filing';
+                
+                stateResult.innerHTML = `
+                    <h5>${stateData.name} (${stateAbbr})</h5>
+                    <p><strong>Status:</strong> <span class="filing-status ${filingStatus}">${statusText}</span></p>
+                    ${filingStatus === 'conditional' ? '<p><em>Note: Conditional filing requirements apply. See detailed notes for specific criteria.</em></p>' : ''}
+                `;
+                
+                resultsContent.appendChild(stateResult);
+            });
+        }
+
+        // Handle Enter key in input
+        document.getElementById('stateInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addState();
+            }
+        });
+
+        // Handle filing type changes
+        document.querySelectorAll('input[name="filingType"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                updateMap();
+                // Also update the filing summary when filing type changes
+                if (selectedStates.length > 0) {
+                    updateFilingSummary();
+                }
+            });
+        });
+
+        // SVG loading function
+        async function loadSVGMap() {
+            try {
+                // Check if we're running from file:// protocol
+                if (window.location.protocol === 'file:') {
+                    throw new Error('File protocol detected. Please use a local web server.');
+                }
+                
+                // Clear any existing text positions for overlap detection
+                if (window.textPositions) {
+                    window.textPositions = [];
+                }
+                
+                const response = await fetch('us.svg');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const svgContent = await response.text();
+                
+                // Insert the SVG content into the container
+                document.getElementById('svgContainer').innerHTML = svgContent;
+                
+                // Get the SVG element and add classes
+                const svg = document.querySelector('#svgContainer svg');
+                if (svg) {
+                    svg.classList.add('usa-map');
+                    svg.setAttribute('viewBox', '0 0 1200 700');
+                    svg.style.width = '115%';
+                    svg.style.height = 'auto';
+                    svg.style.minHeight = '920px';
+                    svg.style.margin = '0 auto';
+                    
+                                            // Add state classes and event listeners
+                        const states = svg.querySelectorAll('path[id]');
+                        let labeledStates = 0;
+                        let tooltipStates = 0;
+                        
+                        states.forEach(state => {
+                            // Remove any existing fill colors and styles from SVG
+                            state.removeAttribute('style');
+                            state.removeAttribute('fill');
+                            
+                            // Set default styling - ensure it's applied
+                            state.style.setProperty('fill', '#f0f0f0', 'important');
+                            state.style.cursor = 'pointer';
+                            state.style.transition = 'fill 0.3s, stroke-width 0.3s';
+                            state.style.position = 'relative';
+                            
+                            // Add state class
+                            state.classList.add('state', 'clickable');
+                            
+
+                            
+                            // Add state abbreviation labels
+                            if (addStateLabel(state)) {
+                                labeledStates++;
+                            }
+                            
+                            // Add hover tooltip
+                            addStateTooltip(state);
+                            tooltipStates++;
+                            
+                                                    // Add click functionality to add/remove states
+                        addStateClickHandler(state);
+                        
+
+                        
+                        // Debug: log the initial state
+                        console.log(`Initialized ${state.id} with fill: ${state.style.fill}`);
+                        });
+                    
+                    console.log(`Loaded ${states.length} states from SVG`);
+                    console.log(`Added labels to ${labeledStates} states`);
+                    console.log(`Added tooltips to ${tooltipStates} states`);
+                } else {
+                    throw new Error('SVG element not found in loaded content');
+                }
+                
+                // Add legend overlay after SVG loads
+                addLegendOverlay();
+                
+                // Initialize the map
+                updateMap();
+                
+            } catch (error) {
+                console.error('Error loading SVG:', error);
+                let errorMessage = '';
+                let solutionMessage = '';
+                
+                if (error.message.includes('File protocol detected')) {
+                    errorMessage = 'File Protocol Issue';
+                    solutionMessage = `
+                        <p><strong>Solution:</strong> This HTML file needs to be served by a web server to work properly.</p>
+                        <p>To fix this, you can:</p>
+                        <ul style="text-align: left; max-width: 500px; margin: 10px auto;">
+                            <li>Use Python: <code>python3 -m http.server 8000</code> then visit <code>http://localhost:8000</code></li>
+                            <li>Use Node.js: <code>npx serve .</code></li>
+                            <li>Use PHP: <code>php -S localhost:8000</code></li>
+                        </ul>
+                        <p>Or simply continue using the version running on port 8000 in your other tab.</p>
+                    `;
+                } else if (error.message.includes('404')) {
+                    errorMessage = 'SVG File Not Found';
+                    solutionMessage = `
+                        <p><strong>Solution:</strong> The 'us.svg' file is missing or not in the correct location.</p>
+                        <p>Please ensure the 'us.svg' file is in the same directory as this HTML file.</p>
+                    `;
+                } else {
+                    errorMessage = 'Error Loading Map';
+                    solutionMessage = `
+                        <p><strong>Error:</strong> ${error.message}</p>
+                        <p>Please try refreshing the page or check the browser console for more details.</p>
+                    `;
+                }
+                
+                document.getElementById('svgContainer').innerHTML = `
+                    <div style="text-align: center; padding: 30px; color: #721c24; background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 8px; max-width: 600px; margin: 0 auto;">
+                        <h4 style="margin-top: 0; color: #721c24;">${errorMessage}</h4>
+                        <p style="margin-bottom: 20px;">Unable to load the US map.</p>
+                        ${solutionMessage}
+                        <div style="margin-top: 20px; padding: 15px; background: #e2e3e5; border-radius: 5px; border: 1px solid #d6d8db;">
+                            <p style="margin: 0; color: #495057; font-size: 14px;">
+                                <strong>Note:</strong> If you're seeing this error but the map works in another tab on port 8000, 
+                                continue using that version as it's working correctly.
+                            </p>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Function to add state abbreviation labels
+        function addStateLabel(stateElement) {
+            const stateId = stateElement.id;
+            
+            if (stateId && stateFilingData[stateId]) {
+                // Check if state is suitable for text display
+                const isSuitable = isStateSuitableForText(stateElement);
+                
+                if (!isSuitable) {
+                    return false; // Don't add label for unsuitable states
+                }
+                
+                // Get the state's bounding box
+                const bbox = stateElement.getBBox();
+                
+                // Create text element for state abbreviation
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('text-anchor', 'middle');
+                text.setAttribute('dominant-baseline', 'middle');
+                text.setAttribute('font-size', '12');
+                text.setAttribute('font-weight', 'bold');
+                text.setAttribute('fill', '#000000');
+                text.setAttribute('data-state-id', stateId);
+                text.textContent = stateId;
+                
+                // Set initial text color based on default state color
+                text.style.setProperty('fill', '#000000', 'important');
+                
+                // Check for custom positioning for problematic states
+                const customPosition = getCustomStatePosition(stateId, bbox);
+                
+                if (customPosition) {
+                    text.setAttribute('x', customPosition.x);
+                    text.setAttribute('y', customPosition.y);
+                    
+                    // Add the text to the SVG
+                    stateElement.parentNode.appendChild(text);
+                    
+                    // Store the text position for overlap detection
+                    if (!window.textPositions) window.textPositions = [];
+                    window.textPositions.push({
+                        stateId: stateId,
+                        x: customPosition.x,
+                        y: customPosition.y,
+                        element: text
+                    });
+                    
+                    return true;
+                }
+                
+                // Find the best position for the text using the general algorithm
+                const bestPosition = findOptimalTextPosition(stateElement, bbox);
+                if (bestPosition) {
+                    // Check for potential overlaps with existing text
+                    if (!wouldTextOverlap(bestPosition, stateId)) {
+                        text.setAttribute('x', bestPosition.x);
+                        text.setAttribute('y', bestPosition.y);
+                        
+                        // Add the text to the SVG
+                        stateElement.parentNode.appendChild(text);
+                        
+                        // Store the text position for overlap detection
+                        if (!window.textPositions) window.textPositions = [];
+                        window.textPositions.push({
+                            stateId: stateId,
+                            x: bestPosition.x,
+                            y: bestPosition.y,
+                            element: text
+                        });
+                        
+                        return true;
+                    } else {
+                        // Try to find an alternative position that doesn't overlap
+                        const alternativePosition = findAlternativePosition(stateElement, bbox, stateId);
+                        if (alternativePosition) {
+                            text.setAttribute('x', alternativePosition.x);
+                            text.setAttribute('y', alternativePosition.y);
+                            
+                            // Add the text to the SVG
+                            stateElement.parentNode.appendChild(text);
+                            
+                            // Store the text position for overlap detection
+                            if (!window.textPositions) window.textPositions = [];
+                            window.textPositions.push({
+                                stateId: stateId,
+                                x: alternativePosition.x,
+                                y: alternativePosition.y,
+                                element: text
+                            });
+                            
+                            return true;
+                        }
+                    }
+                }
+                // If no good position found, don't show the label
+                return false;
+            }
+            return false;
+        }
+
+        // Helper function to check if a point is within a path
+        function isPointInPath(pathElement, x, y) {
+            try {
+                // Create a point and check if it's inside the path
+                const point = pathElement.ownerSVGElement.createSVGPoint();
+                point.x = x;
+                point.y = y;
+                
+                // Use the browser's built-in point-in-path detection
+                return pathElement.isPointInFill ? pathElement.isPointInFill(point) : true;
+            } catch (e) {
+                // Fallback: assume the point is in the path
+                return true;
+            }
+        }
+
+        // Helper function to find the optimal text position within the state
+        function findOptimalTextPosition(stateElement, bbox) {
+            const textWidth = 24; // Approximate width of 2-letter abbreviation with padding
+            const textHeight = 16; // Approximate height of text with padding
+            
+            // Check if state is too small for text
+            if (bbox.width < textWidth + 4 || bbox.height < textHeight + 4) {
+                return null;
+            }
+            
+            // Find the true geometric center of the state path
+            const trueCenter = findTrueGeometricCenter(stateElement, bbox);
+            if (trueCenter && isPointInPath(stateElement, trueCenter.x, trueCenter.y)) {
+                // Check if text fits at the true center
+                if (textFitsAtPosition(trueCenter.x, trueCenter.y, textWidth, textHeight, bbox)) {
+                    return trueCenter;
+                }
+            }
+            
+            // If true center doesn't work, try a more sophisticated grid search
+            return findBestGridPosition(stateElement, bbox, textWidth, textHeight);
+        }
+        
+        // Function to find the true geometric center of an irregular shape
+        function findTrueGeometricCenter(stateElement, bbox) {
+            try {
+                // Get the path data
+                const pathData = stateElement.getAttribute('d');
+                if (!pathData) return null;
+                
+                // Create a temporary path to analyze
+                const tempPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                tempPath.setAttribute('d', pathData);
+                
+                // Sample points along the path to find the center of mass
+                const samplePoints = [];
+                const numSamples = 100;
+                
+                // Get the total length of the path
+                const pathLength = tempPath.getTotalLength();
+                
+                for (let i = 0; i < numSamples; i++) {
+                    const point = tempPath.getPointAtLength((i / (numSamples - 1)) * pathLength);
+                    samplePoints.push({ x: point.x, y: point.y });
+                }
+                
+                // Calculate center of mass
+                let centerX = 0, centerY = 0;
+                samplePoints.forEach(point => {
+                    centerX += point.x;
+                    centerY += point.y;
+                });
+                
+                centerX /= samplePoints.length;
+                centerY /= samplePoints.length;
+                
+                // Ensure the center is within the bounding box
+                if (centerX >= bbox.x && centerX <= bbox.x + bbox.width &&
+                    centerY >= bbox.y && centerY <= bbox.y + bbox.height) {
+                    return { x: centerX, y: centerY };
+                }
+                
+                // Fallback to bounding box center
+                return { x: bbox.x + bbox.width / 2, y: bbox.y + bbox.height / 2 };
+                
+            } catch (e) {
+                // Fallback to bounding box center if path analysis fails
+                return { x: bbox.x + bbox.width / 2, y: bbox.y + bbox.height / 2 };
+            }
+        }
+        
+        // Function to find the best position using a refined grid search
+        function findBestGridPosition(stateElement, bbox, textWidth, textHeight) {
+            const gridSize = 12; // Increased grid density for better precision
+            const stepX = bbox.width / gridSize;
+            const stepY = bbox.height / gridSize;
+            
+            // Start from center and work outward in concentric squares
+            const centerX = bbox.x + bbox.width / 2;
+            const centerY = bbox.y + bbox.height / 2;
+            
+            // Priority order: center, then concentric squares
+            const searchPatterns = [
+                // Center
+                [{ x: centerX, y: centerY }],
+                
+                // Inner square (4 points)
+                [
+                    { x: centerX - stepX, y: centerY - stepY },
+                    { x: centerX + stepX, y: centerY - stepY },
+                    { x: centerX - stepX, y: centerY + stepY },
+                    { x: centerX + stepX, y: centerY + stepY }
+                ],
+                
+                // Middle square (8 points)
+                [
+                    { x: centerX - 2 * stepX, y: centerY },
+                    { x: centerX + 2 * stepX, y: centerY },
+                    { x: centerX, y: centerY - 2 * stepY },
+                    { x: centerX, y: centerY + 2 * stepY },
+                    { x: centerX - 2 * stepX, y: centerY - 2 * stepY },
+                    { x: centerX + 2 * stepX, y: centerY - 2 * stepY },
+                    { x: centerX - 2 * stepX, y: centerY + 2 * stepY },
+                    { x: centerX + 2 * stepX, y: centerY + 2 * stepY }
+                ]
+            ];
+            
+            // Try each pattern in order
+            for (let pattern of searchPatterns) {
+                for (let pos of pattern) {
+                    if (isPointInPath(stateElement, pos.x, pos.y) && 
+                        textFitsAtPosition(pos.x, pos.y, textWidth, textHeight, bbox)) {
+                        return pos;
+                    }
+                }
+            }
+            
+            // If no good position found in patterns, try a few strategic fallback positions
+            const fallbackPositions = [
+                { x: bbox.x + textWidth/2 + 4, y: bbox.y + textHeight/2 + 4 }, // Upper left with padding
+                { x: bbox.x + bbox.width - textWidth/2 - 4, y: bbox.y + textHeight/2 + 4 }, // Upper right with padding
+                { x: bbox.x + textWidth/2 + 4, y: bbox.y + bbox.height - textHeight/2 - 4 }, // Lower left with padding
+                { x: bbox.x + bbox.width - textWidth/2 - 4, y: bbox.y + bbox.height - textHeight/2 - 4 } // Lower right with padding
+            ];
+            
+            for (let pos of fallbackPositions) {
+                if (isPointInPath(stateElement, pos.x, pos.y) && 
+                    textFitsAtPosition(pos.x, pos.y, textWidth, textHeight, bbox)) {
+                    return pos;
+                }
+            }
+            
+            return null; // No good position found
+        }
+        
+        // Helper function to check if text fits at a given position
+        function textFitsAtPosition(x, y, textWidth, textHeight, bbox) {
+            const left = x - textWidth / 2;
+            const right = x + textWidth / 2;
+            const top = y - textHeight / 2;
+            const bottom = y + textHeight / 2;
+            
+            return left >= bbox.x && right <= bbox.x + bbox.width &&
+                   top >= bbox.y && bottom <= bbox.y + bbox.height;
+        }
+
+        // Function to check if a state is too small or oddly shaped for text
+        function isStateSuitableForText(stateElement) {
+            const stateId = stateElement.id;
+            
+            // Explicitly exclude Hawaii, Maryland, and Massachusetts
+            if (stateId === 'HI' || stateId === 'MD' || stateId === 'MA') {
+                return false;
+            }
+            
+            const bbox = stateElement.getBBox();
+            
+            // Check if state is too small - adjusted for better text placement
+            if (bbox.width < 30 || bbox.height < 30) {
+                return false;
+            }
+            
+            // Check if state has reasonable aspect ratio (not too thin or tall)
+            const aspectRatio = bbox.width / bbox.height;
+            if (aspectRatio < 0.3 || aspectRatio > 3.5) {
+                return false;
+            }
+            
+            // Check if the bounding box area is reasonable
+            const area = bbox.width * bbox.height;
+            if (area < 500) { // Reduced minimum area requirement
+                return false;
+            }
+            
+            // Additional check: ensure the state has enough "usable" space
+            const textArea = 24 * 16; // textWidth * textHeight
+            if (area < textArea * 2.5) { // State should be at least 2.5x the text area
+                return false;
+            }
+            
+            // Special handling for known problematic states
+            if (stateId) {
+                // These states are known to be small or oddly shaped - be more lenient
+                const smallStates = ['RI', 'DE', 'CT', 'NJ'];
+                if (smallStates.includes(stateId)) {
+                    // Allow smaller states but with stricter positioning requirements
+                    if (area < 300) return false;
+                    if (bbox.width < 25 || bbox.height < 25) return false;
+                }
+            }
+            
+            return true;
+        }
+
+        // Helper function to check if text would overlap with existing text
+        function wouldTextOverlap(position, stateId, textElement) {
+            if (!window.textPositions) return false;
+            
+            const textWidth = 24;
+            const textHeight = 16;
+            const minDistance = 15; // Minimum distance between text centers
+            
+            for (let existingText of window.textPositions) {
+                if (existingText.stateId === stateId) continue; // Skip self
+                
+                const distance = Math.sqrt(
+                    Math.pow(position.x - existingText.x, 2) + 
+                    Math.pow(position.y - existingText.y, 2)
+                );
+                
+                if (distance < minDistance) {
+                    return true; // Would overlap
+                }
+            }
+            
+            return false;
+        }
+        
+        // Function to find an alternative position that doesn't overlap
+        function findAlternativePosition(stateElement, bbox, stateId) {
+            const textWidth = 24;
+            const textHeight = 16;
+            
+            // Try positions around the edges of the state
+            const edgePositions = [
+                // Top edge
+                { x: bbox.x + bbox.width / 2, y: bbox.y + textHeight/2 + 4 },
+                // Bottom edge
+                { x: bbox.x + bbox.width / 2, y: bbox.y + bbox.height - textHeight/2 - 4 },
+                // Left edge
+                { x: bbox.x + textWidth/2 + 4, y: bbox.y + bbox.height / 2 },
+                // Right edge
+                { x: bbox.x + bbox.width - textWidth/2 - 4, y: bbox.y + bbox.height / 2 },
+                // Corners
+                { x: bbox.x + textWidth/2 + 6, y: bbox.y + textHeight/2 + 6 },
+                { x: bbox.x + bbox.width - textWidth/2 - 6, y: bbox.y + textHeight/2 + 6 },
+                { x: bbox.x + textWidth/2 + 6, y: bbox.y + bbox.height - textHeight/2 - 6 },
+                { x: bbox.x + bbox.width - textWidth/2 - 6, y: bbox.y + bbox.height - textHeight/2 - 6 }
+            ];
+            
+            for (let pos of edgePositions) {
+                if (isPointInPath(stateElement, pos.x, pos.y) && 
+                    textFitsAtPosition(pos.x, pos.y, textWidth, textHeight, bbox) &&
+                    !wouldTextOverlap(pos, stateId)) {
+                    return pos;
+                }
+            }
+            
+            return null;
+        }
+
+        // Helper function to get conditional filing text
+        function getConditionalText(stateId) {
+            switch (stateId) {
+                case 'LA':
+                case 'ME':
+                case 'OH':
+                    return 'If partners are non-residents';
+                case 'NH':
+                    return 'Over $50k income';
+                case 'UT':
+                    return 'If partners are corporate or non-residents';
+                default:
+                    return 'See detailed notes for specific criteria';
+            }
+        }
+        
+
+        
+        // Function to handle state clicks for adding/removing states
+        function addStateClickHandler(stateElement) {
+            const stateId = stateElement.id;
+            
+            stateElement.addEventListener('click', function(e) {
+                // Prevent tooltip from interfering with click
+                if (stateElement.tooltip) {
+                    document.body.removeChild(stateElement.tooltip);
+                    stateElement.tooltip = null;
+                }
+                
+
+                
+                // Clear any hover styles that might be persisting
+                stateElement.style.strokeWidth = '';
+                stateElement.style.stroke = '';
+                
+                // Toggle state selection
+                if (selectedStates.includes(stateId)) {
+                    // Remove state if already selected
+                    removeState(stateId);
+                } else {
+                    // Add state if not selected
+                    if (!selectedStates.includes(stateId)) {
+                        selectedStates.push(stateId);
+                        updateStateDisplay();
+                        updateMap();
+                        
+                        // Show confirmation
+                        showStateAddedConfirmation(stateId);
+                    }
+                }
+                
+                // Force update the map to ensure proper coloring
+                setTimeout(() => {
+                    updateMap();
+                }, 50);
+            });
+        }
+        
+        // Function to show confirmation when state is added
+        function showStateAddedConfirmation(stateId) {
+            const stateName = stateFilingData[stateId].name;
+            
+            // Get or create confirmation container
+            let confirmationContainer = document.getElementById('confirmationContainer');
+            if (!confirmationContainer) {
+                confirmationContainer = document.createElement('div');
+                confirmationContainer.id = 'confirmationContainer';
+                confirmationContainer.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    z-index: 10000;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 10px;
+                    max-width: 300px;
+                `;
+                document.body.appendChild(confirmationContainer);
+            }
+            
+            // Create confirmation message
+            const confirmation = document.createElement('div');
+            confirmation.style.cssText = `
+                background: rgba(108, 117, 125, 0.7);
+                color: white;
+                padding: 12px 16px;
+                border-radius: 6px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+                font-weight: 500;
+                font-size: 14px;
+                animation: slideInRight 0.3s ease-out;
+                backdrop-filter: blur(5px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+            `;
+            confirmation.textContent = `✓ ${stateName} added to selected states`;
+            
+            // Add to container at the beginning (top of stack)
+            confirmationContainer.insertBefore(confirmation, confirmationContainer.firstChild);
+            
+            // Remove confirmation after 3 seconds
+            setTimeout(() => {
+                if (confirmation.parentNode) {
+                    confirmation.style.animation = 'slideOutRight 0.3s ease-in';
+                    setTimeout(() => {
+                        if (confirmation.parentNode) {
+                            confirmation.remove();
+                        }
+                    }, 300);
+                }
+            }, 3000);
+        }
+        
+        // Function to add legend overlay
+        function addLegendOverlay() {
+            const svgContainer = document.getElementById('svgContainer');
+            
+            // Create legend overlay
+            const legendOverlay = document.createElement('div');
+            legendOverlay.className = 'legend-overlay';
+            legendOverlay.innerHTML = `
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #28a745;"></div>
+                    <span>Filing Required</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #6c757d;"></div>
+                    <span>No Filing Required</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #ffc107;"></div>
+                    <span>Conditional Filing</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #ffffff; border: 1px solid #333;"></div>
+                    <span>Not Selected</span>
+                </div>
+            `;
+            
+            // Insert legend overlay at the beginning of the SVG container
+            svgContainer.insertBefore(legendOverlay, svgContainer.firstChild);
+        }
+        
+        // Function to add comprehensive state tooltips
+        function addStateTooltip(stateElement) {
+            const stateId = stateElement.id;
+            if (stateId && stateFilingData[stateId]) {
+                const stateData = stateFilingData[stateId];
+                
+                stateElement.addEventListener('mouseenter', function(e) {
+                    const tooltip = document.createElement('div');
+                    tooltip.className = 'state-tooltip';
+                    
+                    // Create comprehensive tooltip content with new layout
+                    let tooltipContent = `<div class="tooltip-header">${stateData.name} (${stateId})</div>`;
+                    
+                    // Add warnings and advisories below the state name
+                    let hasWarnings = false;
+                    let warningsContent = '';
+                    
+                    if (stateData.cityReturns) {
+                        hasWarnings = true;
+                        if (stateData.cityReturns.type === 'all') {
+                            warningsContent += `
+                                <div class="city-returns-warning" style="margin: 0; font-size: 11px;">
+                                    <strong>⚠️ All Cities Must File</strong>
+                                </div>
+                            `;
+                        } else if (stateData.cityReturns.type === 'specific' && stateData.cityReturns.cities.length > 0) {
+                            warningsContent += `
+                                <div class="city-returns-advisory" style="margin: 0; font-size: 11px;">
+                                    <strong>ℹ️ City Returns: ${stateData.cityReturns.cities.join(', ')}</strong>
+                                </div>
+                            `;
+                        }
+                    }
+                    
+                    // Add conditional filing note if applicable
+                    const hasConditional = Object.values(stateData.forms).some(status => status === 'conditional');
+                    if (hasConditional) {
+                        hasWarnings = true;
+                        if (warningsContent) {
+                            // If we already have city returns, create a 50/50 split layout
+                            warningsContent = `
+                                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                                    <div style="flex: 1;">${warningsContent}</div>
+                                    <div style="flex: 1;">
+                                        <div class="tooltip-note" style="margin: 0; font-size: 11px;">
+                                            <strong>Conditional: ${getConditionalText(stateId)}</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        } else {
+                            // Only conditional filing, no city returns
+                            warningsContent = `
+                                <div class="tooltip-note" style="margin: 0 0 20px 0; font-size: 11px;">
+                                    <strong>Conditional: ${getConditionalText(stateId)}</strong>
+                                </div>
+                            `;
+                        }
+                    } else if (warningsContent) {
+                        // Only city returns, no conditional filing
+                        warningsContent = `
+                            <div style="margin-bottom: 20px;">${warningsContent}</div>
+                        `;
+                    }
+                    
+                    if (hasWarnings) {
+                        tooltipContent += warningsContent;
+                    }
+                    
+                    // Add filing requirements with status indicators
+                    const formTypes = [
+                        { key: '1120S', name: 'S Corporation (1120S)' },
+                        { key: '1065', name: 'Partnership (1065)' },
+                        { key: '1120', name: 'C Corporation (1120)' },
+                        { key: '1040', name: 'Individual (1040)' }
+                    ];
+                    
+                    formTypes.forEach(form => {
+                        const status = stateData.forms[form.key];
+                        const statusClass = status === 'required' ? 'status-required' : 
+                                          status === 'conditional' ? 'status-conditional' : 'status-not-required';
+                        const statusText = status === 'required' ? 'Required' : 
+                                         status === 'conditional' ? 'Conditional' : 'Not Required';
+                        
+                        tooltipContent += `
+                            <div class="tooltip-row">
+                                <span class="form-name">${form.name}:</span>
+                                <span class="status ${statusClass}">${statusText}</span>
+                            </div>
+                        `;
+                    });
+                    
+                    tooltip.innerHTML = tooltipContent;
+                    
+                    // Enhanced tooltip styling with white background
+                    tooltip.style.position = 'absolute';
+                    tooltip.style.left = e.pageX + 15 + 'px';
+                    tooltip.style.top = e.pageY - 15 + 'px';
+                    tooltip.style.background = 'white';
+                    tooltip.style.color = '#495057';
+                    tooltip.style.padding = '25px';
+                    tooltip.style.borderRadius = '12px';
+                    tooltip.style.fontSize = '14px';
+                    tooltip.style.zIndex = '1000';
+                    tooltip.style.pointerEvents = 'none';
+                    tooltip.style.boxShadow = '0 8px 32px rgba(0,0,0,0.15)';
+                    tooltip.style.border = '1px solid #e9ecef';
+                    tooltip.style.minWidth = '400px';
+                    tooltip.style.maxWidth = '450px';
+                    tooltip.style.lineHeight = '1.6';
+                    
+                    document.body.appendChild(tooltip);
+                    stateElement.tooltip = tooltip;
+                });
+                
+                stateElement.addEventListener('mousemove', function(e) {
+                    if (stateElement.tooltip) {
+                        // Position tooltip to avoid going off-screen
+                        const tooltip = stateElement.tooltip;
+                        const tooltipRect = tooltip.getBoundingClientRect();
+                        const viewportWidth = window.innerWidth;
+                        const viewportHeight = window.innerHeight;
+                        
+                        let left = e.pageX + 15;
+                        let top = e.pageY - 15;
+                        
+                        // Adjust horizontal position if tooltip would go off-screen
+                        if (left + tooltipRect.width > viewportWidth - 20) {
+                            left = e.pageX - tooltipRect.width - 15;
+                        }
+                        
+                        // Adjust vertical position if tooltip would go off-screen
+                        if (top + tooltipRect.height > viewportHeight - 20) {
+                            top = e.pageY - tooltipRect.height - 15;
+                        }
+                        
+                        tooltip.style.left = left + 'px';
+                        tooltip.style.top = top + 'px';
+                    }
+                });
+                
+                stateElement.addEventListener('mouseleave', function() {
+                    if (stateElement.tooltip) {
+                        document.body.removeChild(stateElement.tooltip);
+                        stateElement.tooltip = null;
+                    }
+                    
+                });
+            }
+        }
+
+        // Function to get custom positioning for problematic states
+        function getCustomStatePosition(stateId, bbox) {
+            const textWidth = 24;
+            const textHeight = 16;
+            
+            // Custom positioning for specific problematic states
+            switch (stateId) {
+                case 'FL': // Florida - move further north and west to stay in state
+                    return {
+                        x: bbox.x + bbox.width * 0.78,  // Move further west to stay in state
+                        y: bbox.y + bbox.height * 0.45  // Move further north to stay in state
+                    };
+                
+                case 'LA': // Louisiana - move more to the left (west)
+                    return {
+                        x: bbox.x + bbox.width * 0.35, // Move further west
+                        y: bbox.y + bbox.height * 0.6   // Keep same vertical position
+                    };
+                
+                case 'WV': // West Virginia - move slightly left (west)
+                    return {
+                        x: bbox.x + bbox.width * 0.45, // Move slightly west
+                        y: bbox.y + bbox.height * 0.55  // Keep same vertical position
+                    };
+                
+                case 'MD': // Maryland - remove label (too small/complex)
+                case 'MA': // Massachusetts - remove label (too small/complex)
+                    return null; // Don't show labels for these states
+                
+                case 'MI': // Michigan - move further right
+                    return {
+                        x: bbox.x + bbox.width * 0.7,  // Move further east
+                        y: bbox.y + bbox.height * 0.7   // Keep same vertical position
+                    };
+                
+                case 'MN': // Minnesota - move left (west)
+                    return {
+                        x: bbox.x + bbox.width * 0.45, // Move west
+                        y: bbox.y + bbox.height * 0.6   // Keep same vertical position
+                    };
+                
+                case 'KY': // Kentucky - move right slightly
+                    return {
+                        x: bbox.x + bbox.width * 0.55, // Move slightly east
+                        y: bbox.y + bbox.height * 0.5   // Keep vertical center
+                    };
+                
+                case 'CA': // California - keep current positioning
+                    return {
+                        x: bbox.x + bbox.width * 0.5,  // Center horizontally
+                        y: bbox.y + bbox.height * 0.6   // Move south to center in main body
+                    };
+                
+                case 'WA': // Washington - keep current positioning
+                    return {
+                        x: bbox.x + bbox.width * 0.6,  // Move east to center in main body
+                        y: bbox.y + bbox.height * 0.5   // Center vertically
+                    };
+                
+                case 'ID': // Idaho - move further down (south)
+                    return {
+                        x: bbox.x + bbox.width * 0.5,  // Keep horizontal center
+                        y: bbox.y + bbox.height * 0.7  // Move further south
+                    };
+                
+                case 'WI': // Wisconsin - move down slightly
+                    return {
+                        x: bbox.x + bbox.width * 0.5,  // Center horizontally
+                        y: bbox.y + bbox.height * 0.55  // Move slightly south
+                    };
+                
+                case 'TN': // Tennessee - move down slightly
+                    return {
+                        x: bbox.x + bbox.width * 0.5,  // Center horizontally
+                        y: bbox.y + bbox.height * 0.55  // Move slightly south
+                    };
+                
+                case 'AK': // Alaska - center in the main landmass (continental part)
+                    // Alaska's bounding box includes the Aleutian Islands, so we need to position
+                    // the text specifically in the main continental landmass
+                    // Fine-tuning based on visual feedback - move more right and slightly down
+                    const akX = bbox.x + bbox.width * 0.7;  // Move further east (right)
+                    const akY = bbox.y + bbox.height * 0.44;   // Move slightly down (south)
+                    
+                    // Validate the position is within reasonable bounds
+                    const finalAkX = Math.max(bbox.x + 30, Math.min(akX, bbox.x + bbox.width - 30));
+                    const finalAkY = Math.max(bbox.y + 30, Math.min(akY, bbox.y + bbox.height - 30));
+                    
+                    return {
+                        x: finalAkX,
+                        y: finalAkY
+                    };
+                
+                case 'HI': // Hawaii - still remove label (too small and separate)
+                    return null; // Don't show label for Hawaii
+                
+                default:
+                    return null; // Use general algorithm for other states
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if running from file:// protocol and show warning
+            if (window.location.protocol === 'file:') {
+                document.getElementById('fileProtocolWarning').style.display = 'block';
+            }
+            
+            loadSVGMap();
+            
+            // Initialize the state display
+            updateStateDisplay();
+        });
+
+        function selectAll(event) {
+            // Select all states
+            selectedStates = Object.keys(stateFilingData);
+            
+            // Update displays
+            updateStateDisplay();
+            updateMap();
+            
+            // Show confirmation
+            const selectAllButton = event.target;
+            const originalText = selectAllButton.textContent;
+            selectAllButton.textContent = 'All States Selected!';
+            selectAllButton.style.background = '#28a745';
+            
+            setTimeout(() => {
+                selectAllButton.textContent = originalText;
+                selectAllButton.style.background = '#007bff';
+            }, 1500);
+        }
+        
+        function resetAll(event) {
+            // Reset filing type to default (1120S)
+            document.querySelector('input[name="filingType"][value="1120S"]').checked = true;
+            
+            // Clear state input
+            document.getElementById('stateInput').value = '';
+            
+            // Clear selected states
+            selectedStates = [];
+            
+            // Update displays
+            updateStateDisplay();
+            updateMap();
+            
+            // Show confirmation
+            const resetButton = event.target;
+            const originalText = resetButton.textContent;
+            resetButton.textContent = 'Reset Complete!';
+            resetButton.style.background = '#28a745';
+            
+            // Show confirmation
+            showStateAddedConfirmation('ALL');
+            
+            setTimeout(() => {
+                resetButton.textContent = originalText;
+                resetButton.style.background = '#6c757d';
+            }, 1500);
+        }
+    </script>
+</body>
+</html> 
