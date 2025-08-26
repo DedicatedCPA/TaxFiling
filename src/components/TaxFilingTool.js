@@ -10,6 +10,13 @@ const TaxFilingTool = () => {
   const [showModal, setShowModal] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
   const [modalStates, setModalStates] = useState([]);
+  const [priceDetails, setPriceDetails] = useState(null);
+
+  const basePrices = {
+    '1120S': 500,
+    '1065': 550,
+    '1120': 700
+  };
 
   // State name to abbreviation mapping
   const stateNameToAbbr = useMemo(() => {
@@ -53,6 +60,15 @@ const TaxFilingTool = () => {
 
   const resetAll = () => {
     setSelectedStates([]);
+  };
+
+  const calculatePrice = () => {
+    const basePrice = basePrices[filingType] || 0;
+    const stateCount = selectedStates.length;
+    const includedStates = filingType === '1120' ? 1 : 0;
+    const statePrice = Math.max(0, (stateCount - includedStates) * 150);
+    const total = basePrice + statePrice;
+    setPriceDetails({ basePrice, stateCount, statePrice, total });
   };
 
   const showStatesModal = (bucketType) => {
@@ -266,13 +282,13 @@ const TaxFilingTool = () => {
             </div>
           </div>
         )}
-        
-        <div className="action-buttons">
-          <button 
-            className="action-button select-all-btn" 
-            onClick={selectAll}
-          >
-            Select All
+
+          <div className="action-buttons">
+            <button
+              className="action-button select-all-btn"
+              onClick={selectAll}
+            >
+              Select All
           </button>
           <button 
             className="action-button reset-all-btn" 
@@ -285,7 +301,7 @@ const TaxFilingTool = () => {
 
       <div className="map-container">
         <h3>State Filing Requirements Map</h3>
-        <USMap 
+        <USMap
           selectedStates={selectedStates}
           filingType={filingType}
           onStateClick={(stateId) => {
@@ -297,7 +313,26 @@ const TaxFilingTool = () => {
           }}
         />
       </div>
-      
+
+      <div className="pricing-section">
+        <h4>Federal Return Pricing Calculator</h4>
+        <button className="calculate-price-btn" onClick={calculatePrice}>
+          Calculate Return Fee
+        </button>
+        {filingType === '1120' && (
+          <p className="state-pricing-note">First state return included.</p>
+        )}
+        {priceDetails && (
+          <div className="price-details">
+            <p>Federal Return Fee: ${priceDetails.basePrice}</p>
+            <p>
+              State Returns ({priceDetails.stateCount}): ${priceDetails.statePrice}
+            </p>
+            <p><strong>Total Fee: ${priceDetails.total}</strong></p>
+          </div>
+        )}
+      </div>
+
       <StatesModal
         show={showModal}
         onClose={closeStatesModal}
