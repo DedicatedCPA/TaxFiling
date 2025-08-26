@@ -99,6 +99,12 @@ const TaxFilingTool = () => {
     setShowModal(false);
   };
 
+  const openTestModal = () => {
+    setModalTitle('Test Modal');
+    setModalStates(selectedStates);
+    setShowModal(true);
+  };
+
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
       addState();
@@ -227,25 +233,6 @@ const TaxFilingTool = () => {
           </div>
         </div>
         
-          <div className="pricing-section">
-            <h4>Federal Return Pricing Calculator</h4>
-            <button className="calculate-price-btn" onClick={calculatePrice}>
-              Calculate Return Fee
-            </button>
-            {filingType === '1120' && (
-              <p className="state-pricing-note">First state return included.</p>
-            )}
-            {priceDetails && (
-              <div className="price-details">
-                <p>Federal Return Fee: ${priceDetails.basePrice}</p>
-                <p>
-                  State Returns ({priceDetails.stateCount}): ${priceDetails.statePrice}
-                </p>
-                <p><strong>Total Fee: ${priceDetails.total}</strong></p>
-              </div>
-            )}
-          </div>
-
           <div className="action-buttons">
             <button
               className="action-button select-all-btn"
@@ -253,11 +240,17 @@ const TaxFilingTool = () => {
             >
               Select All
           </button>
-          <button 
-            className="action-button reset-all-btn" 
+          <button
+            className="action-button reset-all-btn"
             onClick={resetAll}
           >
             Reset All
+          </button>
+          <button
+            className="action-button test-modal-btn"
+            onClick={openTestModal}
+          >
+            Test Modal
           </button>
         </div>
       </div>
