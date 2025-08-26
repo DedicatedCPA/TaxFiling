@@ -406,11 +406,11 @@ const USMap = ({ selectedStates, filingType, onStateClick }) => {
         if (stateElement) {
           let textColor = '#000000'; // Default to black
 
-          if (stateElement.classList.contains('filing-required') || stateElement.style.fill === '#8dd39e') {
+          if (stateElement.classList.contains('filing-required')) {
             textColor = '#ffffff'; // White for green
-          } else if (stateElement.classList.contains('no-filing') || stateElement.style.fill === '#b0bec5') {
+          } else if (stateElement.classList.contains('no-filing')) {
             textColor = '#000000'; // Dark text for light grey
-          } else if (stateElement.classList.contains('conditional-filing') || stateElement.style.fill === '#ffe58a') {
+          } else if (stateElement.classList.contains('conditional-filing')) {
             textColor = '#000000'; // Black for yellow
           }
 
@@ -426,7 +426,8 @@ const USMap = ({ selectedStates, filingType, onStateClick }) => {
     const stateElements = svgContainerRef.current.querySelectorAll('.state');
     stateElements.forEach(stateElement => {
       stateElement.classList.remove('filing-required', 'no-filing', 'conditional-filing');
-      stateElement.setAttribute('fill', '#f9fafb', 'important');
+      stateElement.removeAttribute('fill');
+      stateElement.style.removeProperty('fill');
     });
   }, []);
 
@@ -440,16 +441,10 @@ const USMap = ({ selectedStates, filingType, onStateClick }) => {
 
       if (filingStatus === 'required') {
         stateElement.classList.add('filing-required');
-        stateElement.style.setProperty('fill', '#8dd39e', 'important');
-        stateElement.setAttribute('fill', '#8dd39e');
       } else if (filingStatus === 'conditional') {
         stateElement.classList.add('conditional-filing');
-        stateElement.style.setProperty('fill', '#ffe58a', 'important');
-        stateElement.setAttribute('fill', '#ffe58a');
       } else if (filingStatus === 'not-required') {
         stateElement.classList.add('no-filing');
-        stateElement.style.setProperty('fill', '#b0bec5', 'important');
-        stateElement.setAttribute('fill', '#b0bec5');
       }
     });
   }, [selectedStates, filingType]);
@@ -466,8 +461,6 @@ const USMap = ({ selectedStates, filingType, onStateClick }) => {
     state.removeAttribute('fill');
 
     // Set default styling
-    state.style.setProperty('fill', '#f9fafb', 'important');
-    state.setAttribute('fill', '#f9fafb');
     state.style.cursor = 'pointer';
     state.style.transition = 'fill 0.3s, stroke-width 0.3s, transform 0.2s';
     state.style.position = 'relative';
