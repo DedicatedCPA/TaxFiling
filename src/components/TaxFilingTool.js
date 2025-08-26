@@ -227,62 +227,6 @@ const TaxFilingTool = () => {
           </div>
         </div>
         
-        {/* Selected States Summary Section */}
-        {selectedStates.length > 0 && (
-          <div className="selected-states-section">
-            <div className="selected-states-summary">
-              <div className="total-count">
-                <h5>Total States Selected: {selectedStates.length}</h5>
-              </div>
-              <div className="states-buckets">
-                <div className="bucket filing-required-bucket">
-                  <div className="bucket-header">
-                    <h5>Filing Required</h5>
-                    <button className="view-states-btn" onClick={() => showStatesModal('required')}>
-                      View States
-                    </button>
-                  </div>
-                  <div className="bucket-content">
-                    <span className="state-count">{requiredCount} states</span>
-                  </div>
-                </div>
-                <div className="bucket conditional-bucket">
-                  <div className="bucket-header">
-                    <h5>Conditional Filing</h5>
-                    <button className="view-states-btn" onClick={() => showStatesModal('conditional')}>
-                      View States
-                    </button>
-                  </div>
-                  <div className="bucket-content">
-                    <span className="state-count">{conditionalCount} states</span>
-                  </div>
-                </div>
-                <div className="bucket no-filing-bucket">
-                  <div className="bucket-header">
-                    <h5>No Filing Required</h5>
-                    <button className="view-states-btn" onClick={() => showStatesModal('no-filing')}>
-                      View States
-                    </button>
-                  </div>
-                  <div className="bucket-content">
-                    <span className="state-count">{notRequiredCount} states</span>
-                  </div>
-                </div>
-              </div>
-              <div className="filing-summary">
-                <h5>Additional Filing Information</h5>
-                {(cityReturnsRequired > 0 || cityReturnsSpecific > 0) && (
-                  <div className="city-returns-info">
-                    <strong>City Returns Required:</strong><br />
-                    {cityReturnsRequired > 0 && `• ${cityReturnsRequired} states require ALL cities to file<br />`}
-                    {cityReturnsSpecific > 0 && `• ${cityReturnsSpecific} states require specific cities to file: ${cityReturnsCities.slice(0, 5).join(', ')}${cityReturnsCities.length > 5 ? ' and more...' : ''}`}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-          )}
           <div className="pricing-section">
             <h4>Federal Return Pricing Calculator</h4>
             <button className="calculate-price-btn" onClick={calculatePrice}>
@@ -332,6 +276,61 @@ const TaxFilingTool = () => {
           }}
         />
       </div>
+
+      {selectedStates.length > 0 && (
+        <div className="selected-states-section">
+          <div className="selected-states-summary">
+            <div className="total-count">
+              <h5>Total States Selected: {selectedStates.length}</h5>
+            </div>
+            <div className="states-buckets">
+              <div className="bucket filing-required-bucket">
+                <div className="bucket-header">
+                  <h5>Filing Required</h5>
+                  <button className="view-states-btn" onClick={() => showStatesModal('required')}>
+                    View States
+                  </button>
+                </div>
+                <div className="bucket-content">
+                  <span className="state-count">{requiredCount} states</span>
+                </div>
+              </div>
+              <div className="bucket conditional-bucket">
+                <div className="bucket-header">
+                  <h5>Conditional Filing</h5>
+                  <button className="view-states-btn" onClick={() => showStatesModal('conditional')}>
+                    View States
+                  </button>
+                </div>
+                <div className="bucket-content">
+                  <span className="state-count">{conditionalCount} states</span>
+                </div>
+              </div>
+              <div className="bucket no-filing-bucket">
+                <div className="bucket-header">
+                  <h5>No Filing Required</h5>
+                  <button className="view-states-btn" onClick={() => showStatesModal('no-filing')}>
+                    View States
+                  </button>
+                </div>
+                <div className="bucket-content">
+                  <span className="state-count">{notRequiredCount} states</span>
+                </div>
+              </div>
+            </div>
+            <div className="filing-summary">
+              <h5>Additional Filing Information</h5>
+              {(cityReturnsRequired > 0 || cityReturnsSpecific > 0) && (
+                <div className="city-returns-info">
+                  <strong>City Returns Required:</strong><br />
+                  {cityReturnsRequired > 0 && `• ${cityReturnsRequired} states require ALL cities to file<br />`}
+                  {cityReturnsSpecific > 0 && `• ${cityReturnsSpecific} states require specific cities to file: ${cityReturnsCities.slice(0, 5).join(', ')}${cityReturnsCities.length > 5 ? ' and more...' : ''}`}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="pricing-section">
         <h4>Federal Return Pricing Calculator</h4>
