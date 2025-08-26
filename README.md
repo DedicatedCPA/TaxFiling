@@ -9,6 +9,7 @@ A React-based web application that helps tax professionals determine state filin
 - **State-by-State Analysis**: View filing requirements for each selected state
 - **Smart Categorization**: Automatically categorizes states into Filing Required, Conditional Filing, and No Filing Required buckets
 - **City Returns Information**: Highlights states with special city filing requirements
+- **Federal Return Pricing Calculator**: Estimate federal and state return fees based on filing type and selected states
 - **Responsive Design**: Works on desktop and mobile devices
 
 ## Getting Started
