@@ -375,7 +375,7 @@ h1 {
 }
 
 .state {
-  fill: #f0f0f0;
+  fill: #f9fafb;
   stroke: #333;
   stroke-width: 0.5;
   cursor: pointer;
@@ -387,16 +387,17 @@ h1 {
   stroke: #007bff;
 }
 
+/* Map state colors controlled via classes */
 .state.filing-required {
-  fill: #28a745;
+  fill: #8dd39e;
 }
 
 .state.no-filing {
-  fill: #6c757d;
+  fill: #b0bec5;
 }
 
 .state.conditional-filing {
-  fill: #ffc107;
+  fill: #ffe58a;
 }
 
 .state:hover {

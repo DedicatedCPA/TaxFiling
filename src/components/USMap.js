@@ -28,6 +28,7 @@ const USMap = ({ selectedStates, filingType, onStateClick }) => {
     return map;
   }, [onStateClick]);
 
+
   const renderedMap = useMemo(() => {
     const element = <USSVG className="usa-map" />;
 
