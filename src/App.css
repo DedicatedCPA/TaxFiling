@@ -11,11 +11,14 @@
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.4);
   border-radius: 12px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
   padding: 40px;
   transition: box-shadow 0.3s ease;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .container:hover {
@@ -31,9 +34,11 @@ h1 {
 .form-section {
   margin-bottom: 30px;
   padding: 25px;
-  background: var(--color-light);
+  background: rgba(255, 255, 255, 0.35);
   border-radius: 8px;
-  border: 1px solid var(--color-medium);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
 }
 
 .form-section h3 {
@@ -97,10 +102,12 @@ h1 {
   gap: 5px;
   cursor: pointer;
   padding: 7px 10px;
-  background: var(--color-light);
-  border: 2px solid var(--color-medium);
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 6px;
   transition: background 0.3s, transform 0.2s, box-shadow 0.2s, border-color 0.3s;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   min-width: 0;
   height: 40px;
   box-sizing: border-box;
@@ -124,7 +131,7 @@ h1 {
 
 .filing-type-option:hover {
   border-color: var(--color-dark);
-  background: #fff;
+  background: rgba(255, 255, 255, 0.6);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
@@ -189,11 +196,13 @@ h1 {
 .selected-states-section {
   margin-top: 20px;
   padding: 15px;
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.35);
   border-radius: 8px;
-  border: 1px solid var(--color-medium);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
   transition: box-shadow 0.3s, transform 0.2s;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
 }
 
 .selected-states-section:hover {
@@ -210,10 +219,12 @@ h1 {
 .total-count {
   text-align: center;
   padding: 10px;
-  background: var(--color-light);
+  background: rgba(255, 255, 255, 0.35);
   border-radius: 6px;
-  border: 1px solid var(--color-medium);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   margin-bottom: 15px;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
 .total-count h5 {
@@ -230,10 +241,12 @@ h1 {
 }
 
 .bucket {
-  background: white;
+  background: rgba(255, 255, 255, 0.35);
   border-radius: 6px;
-  border: 1px solid var(--color-medium);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   padding: 15px;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
 .bucket-header {
@@ -335,9 +348,11 @@ h1 {
 
 .filing-summary {
   padding: 15px;
-  background: white;
+  background: rgba(255, 255, 255, 0.35);
   border-radius: 6px;
-  border: 1px solid #dee2e6;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
 .filing-summary h5 {
