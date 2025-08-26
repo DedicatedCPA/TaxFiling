@@ -179,6 +179,12 @@ const USMap = ({ selectedStates, filingType, onStateClick }) => {
       const stateData = stateFilingData[stateId];
 
       stateElement.addEventListener('mouseenter', (e) => {
+        // Hover styling for interactivity
+        stateElement.style.transform = 'scale(1.03)';
+        stateElement.style.stroke = '#333';
+        stateElement.style.strokeWidth = '2';
+        stateElement.style.filter = 'drop-shadow(0 0 6px rgba(0,0,0,0.2))';
+
         // Remove any existing tooltip before creating a new one
         if (tooltipRef.current) {
           document.body.removeChild(tooltipRef.current);
@@ -332,6 +338,10 @@ const USMap = ({ selectedStates, filingType, onStateClick }) => {
           document.body.removeChild(tooltipRef.current);
           tooltipRef.current = null;
         }
+        stateElement.style.transform = '';
+        stateElement.style.stroke = '';
+        stateElement.style.strokeWidth = '';
+        stateElement.style.filter = '';
       });
     }
   }, []);
@@ -362,15 +372,15 @@ const USMap = ({ selectedStates, filingType, onStateClick }) => {
     legendOverlay.className = 'legend-overlay';
     legendOverlay.innerHTML = `
       <div class="legend-item">
-        <div class="legend-color" style="background: #28a745;"></div>
+        <div class="legend-color" style="background: #8dd39e;"></div>
         <span>Filing Required</span>
       </div>
       <div class="legend-item">
-        <div class="legend-color" style="background: #6c757d;"></div>
+        <div class="legend-color" style="background: #b0bec5;"></div>
         <span>No Filing Required</span>
       </div>
       <div class="legend-item">
-        <div class="legend-color" style="background: #ffc107;"></div>
+        <div class="legend-color" style="background: #ffe58a;"></div>
         <span>Conditional Filing</span>
       </div>
       <div class="legend-item">
@@ -395,15 +405,15 @@ const USMap = ({ selectedStates, filingType, onStateClick }) => {
         
         if (stateElement) {
           let textColor = '#000000'; // Default to black
-          
-          if (stateElement.classList.contains('filing-required') || stateElement.style.fill === '#28a745') {
+
+          if (stateElement.classList.contains('filing-required') || stateElement.style.fill === '#8dd39e') {
             textColor = '#ffffff'; // White for green
-          } else if (stateElement.classList.contains('no-filing') || stateElement.style.fill === '#6c757d') {
-            textColor = '#ffffff'; // White for grey
-          } else if (stateElement.classList.contains('conditional-filing') || stateElement.style.fill === '#ffc107') {
+          } else if (stateElement.classList.contains('no-filing') || stateElement.style.fill === '#b0bec5') {
+            textColor = '#000000'; // Dark text for light grey
+          } else if (stateElement.classList.contains('conditional-filing') || stateElement.style.fill === '#ffe58a') {
             textColor = '#000000'; // Black for yellow
           }
-          
+
           textElement.style.setProperty('fill', textColor, 'important');
           textElement.setAttribute('fill', textColor);
         }
@@ -418,7 +428,7 @@ const USMap = ({ selectedStates, filingType, onStateClick }) => {
     const stateElements = svgContainerRef.current.querySelectorAll('.state');
     stateElements.forEach(stateElement => {
       stateElement.classList.remove('filing-required', 'no-filing', 'conditional-filing');
-      stateElement.style.setProperty('fill', '#f0f0f0', 'important');
+      stateElement.style.setProperty('fill', '#f9fafb', 'important');
     });
     
     // Color selected states based on filing requirements
@@ -430,13 +440,13 @@ const USMap = ({ selectedStates, filingType, onStateClick }) => {
         
         if (filingStatus === 'required') {
           stateElement.classList.add('filing-required');
-          stateElement.style.fill = '#28a745';
+          stateElement.style.fill = '#8dd39e';
         } else if (filingStatus === 'conditional') {
           stateElement.classList.add('conditional-filing');
-          stateElement.style.fill = '#ffc107';
+          stateElement.style.fill = '#ffe58a';
         } else if (filingStatus === 'not-required') {
           stateElement.classList.add('no-filing');
-          stateElement.style.fill = '#6c757d';
+          stateElement.style.fill = '#b0bec5';
         }
       }
     });
@@ -474,11 +484,13 @@ const USMap = ({ selectedStates, filingType, onStateClick }) => {
             state.removeAttribute('fill');
             
             // Set default styling
-            state.style.setProperty('fill', '#f0f0f0', 'important');
+            state.style.setProperty('fill', '#f9fafb', 'important');
             state.style.cursor = 'pointer';
-            state.style.transition = 'fill 0.3s, stroke-width 0.3s';
+            state.style.transition = 'fill 0.3s, stroke-width 0.3s, transform 0.2s';
             state.style.position = 'relative';
-            
+            state.style.transformBox = 'fill-box';
+            state.style.transformOrigin = 'center';
+          
             // Add state class
             state.classList.add('state', 'clickable');
             
