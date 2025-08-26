@@ -281,6 +281,7 @@ const TaxFilingTool = () => {
               </div>
             </div>
           </div>
+        )}
           )}
           <div className="pricing-section">
             <h4>Federal Return Pricing Calculator</h4>
@@ -319,7 +320,7 @@ const TaxFilingTool = () => {
 
       <div className="map-container">
         <h3>State Filing Requirements Map</h3>
-        <USMap 
+        <USMap
           selectedStates={selectedStates}
           filingType={filingType}
           onStateClick={(stateId) => {
@@ -331,7 +332,26 @@ const TaxFilingTool = () => {
           }}
         />
       </div>
-      
+
+      <div className="pricing-section">
+        <h4>Federal Return Pricing Calculator</h4>
+        <button className="calculate-price-btn" onClick={calculatePrice}>
+          Calculate Return Fee
+        </button>
+        {filingType === '1120' && (
+          <p className="state-pricing-note">First state return included.</p>
+        )}
+        {priceDetails && (
+          <div className="price-details">
+            <p>Federal Return Fee: ${priceDetails.basePrice}</p>
+            <p>
+              State Returns ({priceDetails.stateCount}): ${priceDetails.statePrice}
+            </p>
+            <p><strong>Total Fee: ${priceDetails.total}</strong></p>
+          </div>
+        )}
+      </div>
+
       <StatesModal
         show={showModal}
         onClose={closeStatesModal}
