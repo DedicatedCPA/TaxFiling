@@ -545,7 +545,7 @@ const USMap = ({ selectedStates, filingType, onStateClick }) => {
     if (svgLoaded) {
       updateMap();
     }
-  }, [svgLoaded, updateMap]);
+  }, [svgLoaded, selectedStates, filingType, updateMap]);
 
   return (
     <div id="svgContainer" ref={svgContainerRef}>

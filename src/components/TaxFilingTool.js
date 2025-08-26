@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { stateFilingData } from '../data/stateFilingData';
 import USMap from './USMap';
 import StatesModal from './StatesModal';
@@ -6,7 +6,6 @@ import StatesModal from './StatesModal';
 const TaxFilingTool = () => {
   const [selectedStates, setSelectedStates] = useState([]);
   const [filingType, setFilingType] = useState('1120S');
-  const [stateInput, setStateInput] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
   const [modalStates, setModalStates] = useState([]);
@@ -16,38 +15,6 @@ const TaxFilingTool = () => {
     '1120S': 500,
     '1065': 550,
     '1120': 700
-  };
-
-  // State name to abbreviation mapping
-  const stateNameToAbbr = useMemo(() => {
-    const mapping = {};
-    Object.keys(stateFilingData).forEach(abbr => {
-      mapping[stateFilingData[abbr].name.toLowerCase()] = abbr;
-      mapping[abbr.toLowerCase()] = abbr;
-    });
-    return mapping;
-  }, []);
-
-  const addState = () => {
-    const stateInputTrimmed = stateInput.trim();
-    
-    if (!stateInputTrimmed) return;
-    
-    let stateAbbr = null;
-    
-    // Check if it's an abbreviation
-    if (stateNameToAbbr[stateInputTrimmed.toLowerCase()]) {
-      stateAbbr = stateNameToAbbr[stateInputTrimmed.toLowerCase()];
-    }
-    
-    if (stateAbbr && !selectedStates.includes(stateAbbr)) {
-      setSelectedStates(prev => [...prev, stateAbbr]);
-      setStateInput('');
-    } else if (selectedStates.includes(stateAbbr)) {
-      alert('State already selected!');
-    } else {
-      alert('Invalid state name or abbreviation!');
-    }
   };
 
   const removeState = (stateAbbr) => {
@@ -105,12 +72,6 @@ const TaxFilingTool = () => {
     setShowModal(true);
   };
 
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      addState();
-    }
-  };
-
   // Calculate counts for each bucket
   const getBucketCounts = () => {
     let requiredCount = 0;
@@ -165,71 +126,53 @@ const TaxFilingTool = () => {
       
       <div className="form-section">
         <h3>Tax Filing Configuration</h3>
-        <p>Configure your client's tax filing requirements and select the states where your client lives or has income. The map below will automatically update to show filing requirements for each selected state.</p>
+        <p>Configure your client's tax filing requirements and select the states where your client lives or has income. Click on the map to choose states, and the map will automatically update to show filing requirements for each selection.</p>
         
-        <div className="side-by-side-container">
-          <div>
-            <h4>Select Filing Type</h4>
-            <p>Choose the type of tax filing to determine state requirements:</p>
-            
-            <div className="filing-type-selector">
-              <label className="filing-type-option">
-                <input 
-                  type="radio" 
-                  name="filingType" 
-                  value="1120S" 
-                  checked={filingType === '1120S'}
-                  onChange={(e) => setFilingType(e.target.value)}
-                />
-                <span className="filing-type-label">1120S - S Corporation</span>
-              </label>
-              <label className="filing-type-option">
-                <input 
-                  type="radio" 
-                  name="filingType" 
-                  value="1065"
-                  checked={filingType === '1065'}
-                  onChange={(e) => setFilingType(e.target.value)}
-                />
-                <span className="filing-type-label">1065 - Partnership</span>
-              </label>
-              <label className="filing-type-option">
-                <input 
-                  type="radio" 
-                  name="filingType" 
-                  value="1120"
-                  checked={filingType === '1120'}
-                  onChange={(e) => setFilingType(e.target.value)}
-                />
-                <span className="filing-type-label">1120 - C Corporation</span>
-              </label>
-              <label className="filing-type-option">
-                <input 
-                  type="radio" 
-                  name="filingType" 
-                  value="1040"
-                  checked={filingType === '1040'}
-                  onChange={(e) => setFilingType(e.target.value)}
-                />
-                <span className="filing-type-label">1040 - Individual</span>
-              </label>
-            </div>
-          </div>
-          
-          <div>
-            <h4>Select Client States</h4>
-            <p>Enter the states where your client lives or has income:</p>
-            
-            <div className="state-input">
-              <input 
-                type="text" 
-                value={stateInput}
-                onChange={(e) => setStateInput(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="Enter state name or abbreviation (e.g., CA, California)"
+        <div>
+          <h4>Select Filing Type</h4>
+          <p>Choose the type of tax filing to determine state requirements:</p>
+
+          <div className="filing-type-selector">
+            <label className="filing-type-option">
+              <input
+                type="radio"
+                name="filingType"
+                value="1120S"
+                checked={filingType === '1120S'}
+                onChange={(e) => setFilingType(e.target.value)}
               />
-              <button onClick={addState}>Add State</button>
-            </div>
+              <span className="filing-type-label">1120S - S Corporation</span>
+            </label>
+            <label className="filing-type-option">
+              <input
+                type="radio"
+                name="filingType"
+                value="1065"
+                checked={filingType === '1065'}
+                onChange={(e) => setFilingType(e.target.value)}
+              />
+              <span className="filing-type-label">1065 - Partnership</span>
+            </label>
+            <label className="filing-type-option">
+              <input
+                type="radio"
+                name="filingType"
+                value="1120"
+                checked={filingType === '1120'}
+                onChange={(e) => setFilingType(e.target.value)}
+              />
+              <span className="filing-type-label">1120 - C Corporation</span>
+            </label>
+            <label className="filing-type-option">
+              <input
+                type="radio"
+                name="filingType"
+                value="1040"
+                checked={filingType === '1040'}
+                onChange={(e) => setFilingType(e.target.value)}
+              />
+              <span className="filing-type-label">1040 - Individual</span>
+            </label>
           </div>
         </div>
         
