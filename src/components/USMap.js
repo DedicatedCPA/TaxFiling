@@ -429,6 +429,8 @@ const USMap = ({ selectedStates, filingType, onStateClick }) => {
     stateElements.forEach(stateElement => {
       stateElement.classList.remove('filing-required', 'no-filing', 'conditional-filing');
       stateElement.style.setProperty('fill', '#f9fafb', 'important');
+      // Also set the fill attribute to ensure the color is applied
+      stateElement.setAttribute('fill', '#f9fafb');
     });
     
     // Color selected states based on filing requirements
@@ -441,12 +443,15 @@ const USMap = ({ selectedStates, filingType, onStateClick }) => {
         if (filingStatus === 'required') {
           stateElement.classList.add('filing-required');
           stateElement.style.setProperty('fill', '#8dd39e', 'important');
+          stateElement.setAttribute('fill', '#8dd39e');
         } else if (filingStatus === 'conditional') {
           stateElement.classList.add('conditional-filing');
           stateElement.style.setProperty('fill', '#ffe58a', 'important');
+          stateElement.setAttribute('fill', '#ffe58a');
         } else if (filingStatus === 'not-required') {
           stateElement.classList.add('no-filing');
           stateElement.style.setProperty('fill', '#b0bec5', 'important');
+          stateElement.setAttribute('fill', '#b0bec5');
         }
       }
     });
@@ -485,6 +490,7 @@ const USMap = ({ selectedStates, filingType, onStateClick }) => {
             
             // Set default styling
             state.style.setProperty('fill', '#f9fafb', 'important');
+            state.setAttribute('fill', '#f9fafb');
             state.style.cursor = 'pointer';
             state.style.transition = 'fill 0.3s, stroke-width 0.3s, transform 0.2s';
             state.style.position = 'relative';
