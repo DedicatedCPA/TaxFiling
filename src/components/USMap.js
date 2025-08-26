@@ -437,16 +437,16 @@ const USMap = ({ selectedStates, filingType, onStateClick }) => {
       if (stateElement) {
         const stateData = stateFilingData[stateAbbr];
         const filingStatus = stateData.forms[filingType];
-        
+
         if (filingStatus === 'required') {
           stateElement.classList.add('filing-required');
-          stateElement.style.fill = '#8dd39e';
+          stateElement.style.setProperty('fill', '#8dd39e', 'important');
         } else if (filingStatus === 'conditional') {
           stateElement.classList.add('conditional-filing');
-          stateElement.style.fill = '#ffe58a';
+          stateElement.style.setProperty('fill', '#ffe58a', 'important');
         } else if (filingStatus === 'not-required') {
           stateElement.classList.add('no-filing');
-          stateElement.style.fill = '#b0bec5';
+          stateElement.style.setProperty('fill', '#b0bec5', 'important');
         }
       }
     });
