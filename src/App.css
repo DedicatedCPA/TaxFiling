@@ -706,42 +706,14 @@ h1 {
   background: var(--primary);
 }
 
-.pricing-section {
-  margin-top: 20px;
-  padding: 15px;
-  background: #ffffff;
-  border: 1px solid var(--color-medium);
-  border-radius: 8px;
-}
-
-.calculate-price-btn {
-  padding: 10px 20px;
+.test-modal-btn {
   background: var(--color-dark);
-  color: #fff;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 16px;
-  transition: background 0.3s, transform 0.2s, box-shadow 0.2s;
-  margin-top: 10px;
 }
 
-.calculate-price-btn:hover {
+.test-modal-btn:hover {
   background: var(--color-medium);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
-.price-details {
-  margin-top: 10px;
-  line-height: 1.6;
-}
-
-.state-pricing-note {
-  margin-top: 8px;
-  font-size: 14px;
-  color: var(--color-medium);
-}
 .pricing-section {
   margin-top: 20px;
   padding: 15px;
