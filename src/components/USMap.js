@@ -512,32 +512,8 @@ const USMap = ({ selectedStates, filingType, onStateClick }) => {
           // Add state classes and event listeners
           const states = svg.querySelectorAll('path[id]');
 
-
           states.forEach(state => {
-            // Remove any existing fill colors and styles from SVG
-            state.removeAttribute('style');
-            state.removeAttribute('fill');
-            
-            // Set default styling
-            state.style.setProperty('fill', '#f9fafb', 'important');
-            state.setAttribute('fill', '#f9fafb');
-            state.style.cursor = 'pointer';
-            state.style.transition = 'fill 0.3s, stroke-width 0.3s, transform 0.2s';
-            state.style.position = 'relative';
-            state.style.transformBox = 'fill-box';
-            state.style.transformOrigin = 'center';
-          
-            // Add state class
-            state.classList.add('state', 'clickable');
-            
-            // Add state abbreviation labels
-            addStateLabel(state);
-
-            // Add hover tooltip
-            addStateTooltip(state);
-
-            // Add click functionality
-            addStateClickHandler(state);
+            setupStateElement(state);
           });
         }
 
