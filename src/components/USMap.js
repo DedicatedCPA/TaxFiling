@@ -420,40 +420,73 @@ const USMap = ({ selectedStates, filingType, onStateClick }) => {
       }
     });
   }, []);
-
-  const updateMap = useCallback(() => {
+  // Break map updates into smaller chunks for clarity
+  const resetStateStyles = useCallback(() => {
     if (!svgContainerRef.current) return;
-    
-    // Reset all states to default light grey
     const stateElements = svgContainerRef.current.querySelectorAll('.state');
     stateElements.forEach(stateElement => {
       stateElement.classList.remove('filing-required', 'no-filing', 'conditional-filing');
       stateElement.style.setProperty('fill', '#f9fafb', 'important');
+      stateElement.setAttribute('fill', '#f9fafb');
     });
-    
-    // Color selected states based on filing requirements
+  }, []);
+
+  const applySelectedStateStyles = useCallback(() => {
+    if (!svgContainerRef.current) return;
     selectedStates.forEach(stateAbbr => {
       const stateElement = svgContainerRef.current.querySelector(`#${stateAbbr}`);
-      if (stateElement) {
-        const stateData = stateFilingData[stateAbbr];
-        const filingStatus = stateData.forms[filingType];
+      if (!stateElement) return;
+      const stateData = stateFilingData[stateAbbr];
+      const filingStatus = stateData.forms[filingType];
 
-        if (filingStatus === 'required') {
-          stateElement.classList.add('filing-required');
-          stateElement.style.setProperty('fill', '#8dd39e', 'important');
-        } else if (filingStatus === 'conditional') {
-          stateElement.classList.add('conditional-filing');
-          stateElement.style.setProperty('fill', '#ffe58a', 'important');
-        } else if (filingStatus === 'not-required') {
-          stateElement.classList.add('no-filing');
-          stateElement.style.setProperty('fill', '#b0bec5', 'important');
-        }
+      if (filingStatus === 'required') {
+        stateElement.classList.add('filing-required');
+        stateElement.style.setProperty('fill', '#8dd39e', 'important');
+        stateElement.setAttribute('fill', '#8dd39e');
+      } else if (filingStatus === 'conditional') {
+        stateElement.classList.add('conditional-filing');
+        stateElement.style.setProperty('fill', '#ffe58a', 'important');
+        stateElement.setAttribute('fill', '#ffe58a');
+      } else if (filingStatus === 'not-required') {
+        stateElement.classList.add('no-filing');
+        stateElement.style.setProperty('fill', '#b0bec5', 'important');
+        stateElement.setAttribute('fill', '#b0bec5');
       }
     });
-    
-    // Update text colors
+  }, [selectedStates, filingType]);
+
+  const updateMap = useCallback(() => {
+    resetStateStyles();
+    applySelectedStateStyles();
     updateTextColors();
-  }, [selectedStates, filingType, updateTextColors]);
+  }, [resetStateStyles, applySelectedStateStyles, updateTextColors]);
+
+  const setupStateElement = useCallback((state) => {
+    // Remove any existing fill colors and styles from SVG
+    state.removeAttribute('style');
+    state.removeAttribute('fill');
+
+    // Set default styling
+    state.style.setProperty('fill', '#f9fafb', 'important');
+    state.setAttribute('fill', '#f9fafb');
+    state.style.cursor = 'pointer';
+    state.style.transition = 'fill 0.3s, stroke-width 0.3s, transform 0.2s';
+    state.style.position = 'relative';
+    state.style.transformBox = 'fill-box';
+    state.style.transformOrigin = 'center';
+
+    // Add state class
+    state.classList.add('state', 'clickable');
+
+    // Add state abbreviation labels
+    addStateLabel(state);
+
+    // Add hover tooltip
+    addStateTooltip(state);
+
+    // Add click functionality
+    addStateClickHandler(state);
+  }, [addStateLabel, addStateTooltip, addStateClickHandler]);
 
   const loadSVGMap = useCallback(async () => {
     try {
@@ -462,10 +495,10 @@ const USMap = ({ selectedStates, filingType, onStateClick }) => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const svgContent = await response.text();
-      
+
       if (svgContainerRef.current) {
         svgContainerRef.current.innerHTML = svgContent;
-        
+
         const svg = svgContainerRef.current.querySelector('svg');
         if (svg) {
           svg.classList.add('usa-map');
@@ -474,40 +507,17 @@ const USMap = ({ selectedStates, filingType, onStateClick }) => {
           svg.style.height = 'auto';
           svg.style.minHeight = '920px';
           svg.style.margin = '0 auto';
-          
+          // Remove default fill that prevents state colors
+          svg.style.removeProperty('fill');
+
           // Add state classes and event listeners
           const states = svg.querySelectorAll('path[id]');
-
-          states.forEach(state => {
-            // Remove any existing fill colors and styles from SVG
-            state.removeAttribute('style');
-            state.removeAttribute('fill');
-            
-            // Set default styling
-            state.style.setProperty('fill', '#f9fafb', 'important');
-            state.style.cursor = 'pointer';
-            state.style.transition = 'fill 0.3s, stroke-width 0.3s, transform 0.2s';
-            state.style.position = 'relative';
-            state.style.transformBox = 'fill-box';
-            state.style.transformOrigin = 'center';
-          
-            // Add state class
-            state.classList.add('state', 'clickable');
-            
-            // Add state abbreviation labels
-            addStateLabel(state);
-
-            // Add hover tooltip
-            addStateTooltip(state);
-
-            // Add click functionality
-            addStateClickHandler(state);
-          });
+          states.forEach(setupStateElement);
         }
-        
+
         // Add legend overlay
         addLegendOverlay();
-        
+
         setSvgLoaded(true);
       }
     } catch (error) {
@@ -523,7 +533,7 @@ const USMap = ({ selectedStates, filingType, onStateClick }) => {
         `;
       }
     }
-  }, [addStateLabel, addStateTooltip, addStateClickHandler, addLegendOverlay]);
+  }, [setupStateElement, addLegendOverlay]);
 
   useEffect(() => {
     loadSVGMap();
@@ -542,4 +552,4 @@ const USMap = ({ selectedStates, filingType, onStateClick }) => {
   );
 };
 
-export default USMap; 
+export default USMap;
