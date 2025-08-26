@@ -5,6 +5,9 @@
   --gray-100: #f1f5f9;
   --gray-300: #cbd5e1;
   --gray-600: #475569;
+  --color-light: #bcb2a1;
+  --color-medium: #887d71;
+  --color-dark: #473827;
 }
 
 body {
