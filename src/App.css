@@ -61,11 +61,13 @@ h1 {
 }
 
 .filing-type-selector {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 15px;
   margin-top: 20px;
-  justify-content: flex-start;
+  background: var(--color-light);
+  padding: 10px;
+  border-radius: 8px;
 }
 
 .side-by-side-container {
@@ -87,70 +89,36 @@ h1 {
   }
   
   .filing-type-selector {
-    flex-wrap: wrap;
+    grid-template-columns: 1fr;
     gap: 8px;
-  }
-  
-  .filing-type-option {
-    flex: none;
-    min-width: calc(50% - 4px);
   }
 }
 
 .filing-type-option {
-  display: flex;
-  align-items: center;
-  gap: 5px;
   cursor: pointer;
-  padding: 7px 10px;
-  background: rgba(255, 255, 255, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 6px;
-  transition: background 0.3s, transform 0.2s, box-shadow 0.2s, border-color 0.3s;
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  min-width: 0;
-  height: 40px;
-  box-sizing: border-box;
 }
 
-.filing-type-option:nth-child(1) {
-  flex: 1.4;
-}
-
-.filing-type-option:nth-child(2) {
-  flex: 1.2;
-}
-
-.filing-type-option:nth-child(3) {
-  flex: 1.2;
-}
-
-.filing-type-option:nth-child(4) {
-  flex: 1.0;
-}
-
-.filing-type-option:hover {
-  border-color: var(--color-dark);
-  background: rgba(255, 255, 255, 0.6);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-
-.filing-type-option input[type="radio"]:checked + .filing-type-label {
-  color: var(--color-dark);
-  font-weight: 600;
-}
-
-.filing-type-option input[type="radio"]:checked {
-  accent-color: var(--color-dark);
+.filing-type-option input[type="radio"] {
+  display: none;
 }
 
 .filing-type-label {
+  display: block;
   font-size: 13px;
   color: var(--color-dark);
-  white-space: nowrap;
+  background: var(--color-medium);
+  border: 1px solid var(--color-dark);
+  border-radius: 6px;
+  padding: 10px;
+  text-align: center;
+  white-space: normal;
+  transition: background 0.3s, color 0.3s;
+}
+
+.filing-type-option input[type="radio"]:checked + .filing-type-label {
+  background: var(--color-dark);
+  color: #fff;
+  font-weight: 600;
 }
 
 .state-input {
