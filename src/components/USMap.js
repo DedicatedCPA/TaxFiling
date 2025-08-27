@@ -1,13 +1,137 @@
-import React, { useEffect, useRef, useCallback, useMemo } from 'react';
+import React, { useEffect, useRef, useCallback, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { stateFilingData } from '../data/stateFilingData';
 import { getConditionalText } from '../data/stateFilingData';
 import { ReactComponent as USSVG } from '../assets/us.svg';
+
+const TooltipContent = ({ stateId, stateData }) => {
+  const warnings = [];
+
+  if (stateData.cityReturns) {
+    if (stateData.cityReturns.type === 'all') {
+      warnings.push(
+        <div key="city-all" className="city-returns-warning" style={{ margin: 0, fontSize: '11px' }}>
+          <strong>⚠️ All Cities Must File</strong>
+        </div>
+      );
+    } else if (stateData.cityReturns.type === 'specific' && stateData.cityReturns.cities.length > 0) {
+      warnings.push(
+        <div key="city-specific" className="city-returns-advisory" style={{ margin: 0, fontSize: '11px' }}>
+          <strong>ℹ️ City Returns: {stateData.cityReturns.cities.join(', ')}</strong>
+        </div>
+      );
+    }
+  }
+
+  const hasConditional = Object.values(stateData.forms).some(status => status === 'conditional');
+  const conditionalWarning = hasConditional ? (
+    <div className="tooltip-note" style={{ margin: 0, fontSize: '11px' }}>
+      <strong>Conditional: {getConditionalText(stateId)}</strong>
+    </div>
+  ) : null;
+
+  let warningBlock = null;
+  if (warnings.length && conditionalWarning) {
+    warningBlock = (
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+        <div style={{ flex: 1 }}>{warnings}</div>
+        <div style={{ flex: 1 }}>{conditionalWarning}</div>
+      </div>
+    );
+  } else if (warnings.length || conditionalWarning) {
+    warningBlock = (
+      <div style={{ marginBottom: '20px' }}>
+        {warnings.length ? warnings : conditionalWarning}
+      </div>
+    );
+  }
+
+  const formTypes = [
+    { key: '1120S', name: 'S Corporation (1120S)' },
+    { key: '1065', name: 'Partnership (1065)' },
+    { key: '1120', name: 'C Corporation (1120)' },
+    { key: '1040', name: 'Individual (1040)' }
+  ];
+
+  return (
+    <>
+      <div className="tooltip-header">{stateData.name} ({stateId})</div>
+      {warningBlock}
+      {formTypes.map(form => {
+        const status = stateData.forms[form.key];
+        const statusClass =
+          status === 'required'
+            ? 'status-required'
+            : status === 'conditional'
+            ? 'status-conditional'
+            : 'status-not-required';
+        const statusText =
+          status === 'required'
+            ? 'Required'
+            : status === 'conditional'
+            ? 'Conditional'
+            : 'Not Required';
+        return (
+          <div className="tooltip-row" key={form.key}>
+            <span className="form-name">{form.name}:</span>
+            <span className={`status ${statusClass}`}>{statusText}</span>
+          </div>
+        );
+      })}
+    </>
+  );
+};
+
+const Tooltip = ({ info }) => {
+  const ref = useRef(null);
+  const [style, setStyle] = useState({ left: info.x + 15, top: info.y - 15 });
+
+  useEffect(() => {
+    if (ref.current) {
+      const rect = ref.current.getBoundingClientRect();
+      let left = info.x + 15;
+      let top = info.y - 15;
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      if (left + rect.width > vw - 20) left = info.x - rect.width - 15;
+      if (top + rect.height > vh - 20) top = info.y - rect.height - 15;
+      setStyle({ left, top });
+    }
+  }, [info.x, info.y]);
+
+  return createPortal(
+    <div
+      ref={ref}
+      className="state-tooltip"
+      style={{
+        position: 'absolute',
+        left: `${style.left}px`,
+        top: `${style.top}px`,
+        background: 'white',
+        color: '#495057',
+        padding: '25px',
+        borderRadius: '12px',
+        fontSize: '14px',
+        zIndex: 1000,
+        pointerEvents: 'none',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+        border: '1px solid #e9ecef',
+        minWidth: '400px',
+        maxWidth: '450px',
+        lineHeight: '1.6'
+      }}
+    >
+      <TooltipContent stateId={info.stateId} stateData={info.stateData} />
+    </div>,
+    document.body
+  );
+};
 
 const USMap = ({ selectedStates, filingType, onStateClick }) => {
   const svgContainerRef = useRef(null);
   const svgRef = useRef(null);
   const initializedRef = useRef(false);
-  const tooltipRef = useRef(null);
+  const [tooltipInfo, setTooltipInfo] = useState(null);
 
   // Helper: check if state is suitable for displaying text
   const isStateSuitableForText = useCallback((stateElement) => {
@@ -116,112 +240,21 @@ const USMap = ({ selectedStates, filingType, onStateClick }) => {
     stateElement.style.strokeWidth = '2';
     stateElement.style.filter = 'drop-shadow(0 0 6px rgba(0,0,0,0.2))';
 
-    if (tooltipRef.current) {
-      document.body.removeChild(tooltipRef.current);
-      tooltipRef.current = null;
-    }
-
-    let tooltipContent = `<div class="tooltip-header">${stateData.name} (${stateId})</div>`;
-    let hasWarnings = false;
-    let warningsContent = '';
-
-    if (stateData.cityReturns) {
-      hasWarnings = true;
-      if (stateData.cityReturns.type === 'all') {
-        warningsContent += `<div class="city-returns-warning" style="margin:0;font-size:11px;"><strong>⚠️ All Cities Must File</strong></div>`;
-      } else if (stateData.cityReturns.type === 'specific' && stateData.cityReturns.cities.length > 0) {
-        warningsContent += `<div class="city-returns-advisory" style="margin:0;font-size:11px;"><strong>ℹ️ City Returns: ${stateData.cityReturns.cities.join(', ')}</strong></div>`;
-      }
-    }
-
-    const hasConditional = Object.values(stateData.forms).some(status => status === 'conditional');
-    if (hasConditional) {
-      hasWarnings = true;
-      if (warningsContent) {
-        warningsContent = `
-          <div style="display:flex;gap:10px;margin-bottom:20px;">
-            <div style="flex:1;">${warningsContent}</div>
-            <div style="flex:1;">
-              <div class="tooltip-note" style="margin:0;font-size:11px;">
-                <strong>Conditional: ${getConditionalText(stateId)}</strong>
-              </div>
-            </div>
-          </div>`;
-      } else {
-        warningsContent = `<div class="tooltip-note" style="margin:0 0 20px 0;font-size:11px;"><strong>Conditional: ${getConditionalText(stateId)}</strong></div>`;
-      }
-    } else if (warningsContent) {
-      warningsContent = `<div style="margin-bottom:20px;">${warningsContent}</div>`;
-    }
-
-    if (hasWarnings) tooltipContent += warningsContent;
-
-    const formTypes = [
-      { key: '1120S', name: 'S Corporation (1120S)' },
-      { key: '1065', name: 'Partnership (1065)' },
-      { key: '1120', name: 'C Corporation (1120)' },
-      { key: '1040', name: 'Individual (1040)' }
-    ];
-    formTypes.forEach(form => {
-      const status = stateData.forms[form.key];
-      const statusClass = status === 'required' ? 'status-required' :
-        status === 'conditional' ? 'status-conditional' : 'status-not-required';
-      const statusText = status === 'required' ? 'Required' :
-        status === 'conditional' ? 'Conditional' : 'Not Required';
-
-      tooltipContent += `
-        <div class="tooltip-row">
-          <span class="form-name">${form.name}:</span>
-          <span class="status ${statusClass}">${statusText}</span>
-        </div>`;
+    setTooltipInfo({
+      stateId,
+      stateData,
+      x: e.pageX,
+      y: e.pageY
     });
-
-    const tooltipElement = document.createElement('div');
-    tooltipElement.className = 'state-tooltip';
-    tooltipElement.innerHTML = tooltipContent;
-    Object.assign(tooltipElement.style, {
-      position: 'absolute',
-      left: `${e.pageX + 15}px`,
-      top: `${e.pageY - 15}px`,
-      background: 'white',
-      color: '#495057',
-      padding: '25px',
-      borderRadius: '12px',
-      fontSize: '14px',
-      zIndex: '1000',
-      pointerEvents: 'none',
-      boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
-      border: '1px solid #e9ecef',
-      minWidth: '400px',
-      maxWidth: '450px',
-      lineHeight: '1.6'
-    });
-
-    document.body.appendChild(tooltipElement);
-    tooltipRef.current = tooltipElement;
   }, []);
 
   // Tooltip repositioning
   const handleMouseMove = useCallback((e) => {
-    const tooltip = tooltipRef.current;
-    if (tooltip) {
-      const rect = tooltip.getBoundingClientRect();
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      let left = e.pageX + 15;
-      let top = e.pageY - 15;
-      if (left + rect.width > vw - 20) left = e.pageX - rect.width - 15;
-      if (top + rect.height > vh - 20) top = e.pageY - rect.height - 15;
-      tooltip.style.left = `${left}px`;
-      tooltip.style.top = `${top}px`;
-    }
+    setTooltipInfo(prev => (prev ? { ...prev, x: e.pageX, y: e.pageY } : prev));
   }, []);
 
   const handleMouseLeave = useCallback((e) => {
-    if (tooltipRef.current) {
-      document.body.removeChild(tooltipRef.current);
-      tooltipRef.current = null;
-    }
+    setTooltipInfo(null);
     const stateElement = e.currentTarget;
     stateElement.style.transform = '';
     stateElement.style.stroke = '';
@@ -232,10 +265,7 @@ const USMap = ({ selectedStates, filingType, onStateClick }) => {
   const handleClick = useCallback((e) => {
     const stateElement = e.currentTarget;
     const stateId = stateElement.id;
-    if (tooltipRef.current) {
-      document.body.removeChild(tooltipRef.current);
-      tooltipRef.current = null;
-    }
+    setTooltipInfo(null);
     stateElement.style.strokeWidth = '';
     stateElement.style.stroke = '';
     onStateClick(stateId);
@@ -266,12 +296,31 @@ const USMap = ({ selectedStates, filingType, onStateClick }) => {
     if (!svgContainerRef.current) return;
     const legendOverlay = document.createElement('div');
     legendOverlay.className = 'legend-overlay';
-    legendOverlay.innerHTML = `
-      <div class="legend-item"><div class="legend-color" style="background:#8dd39e;"></div><span>Filing Required</span></div>
-      <div class="legend-item"><div class="legend-color" style="background:#b0bec5;"></div><span>No Filing Required</span></div>
-      <div class="legend-item"><div class="legend-color" style="background:#ffe58a;"></div><span>Conditional Filing</span></div>
-      <div class="legend-item"><div class="legend-color" style="background:#ffffff;border:1px solid #333;"></div><span>Not Selected</span></div>
-    `;
+
+    const items = [
+      { color: '#8dd39e', label: 'Filing Required' },
+      { color: '#b0bec5', label: 'No Filing Required' },
+      { color: '#ffe58a', label: 'Conditional Filing' },
+      { color: '#ffffff', label: 'Not Selected', border: '1px solid #333' }
+    ];
+
+    items.forEach(item => {
+      const itemDiv = document.createElement('div');
+      itemDiv.className = 'legend-item';
+
+      const colorDiv = document.createElement('div');
+      colorDiv.className = 'legend-color';
+      colorDiv.style.background = item.color;
+      if (item.border) colorDiv.style.border = item.border;
+      itemDiv.appendChild(colorDiv);
+
+      const span = document.createElement('span');
+      span.textContent = item.label;
+      itemDiv.appendChild(span);
+
+      legendOverlay.appendChild(itemDiv);
+    });
+
     svgContainerRef.current.insertBefore(legendOverlay, svgContainerRef.current.firstChild);
   }, []);
 
@@ -369,17 +418,13 @@ const USMap = ({ selectedStates, filingType, onStateClick }) => {
   }, [selectedStates, filingType, updateMap]);
 
   useEffect(() => {
-    return () => {
-      if (tooltipRef.current) {
-        document.body.removeChild(tooltipRef.current);
-        tooltipRef.current = null;
-      }
-    };
+    return () => setTooltipInfo(null);
   }, []);
 
   return (
     <div id="svgContainer" ref={svgContainerRef}>
       {svgElement}
+      {tooltipInfo && <Tooltip info={tooltipInfo} />}
     </div>
   );
 };
