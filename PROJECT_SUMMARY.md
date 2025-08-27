@@ -42,8 +42,7 @@ Successfully converted the original HTML-based tax filing tool into a modern, de
 TaxFiling/
 ├── public/
 │   ├── index.html
-│   ├── manifest.json
-│   └── us.svg
+│   └── manifest.json
 ├── src/
 │   ├── components/
 │   │   ├── TaxFilingTool.js    # Main app component
