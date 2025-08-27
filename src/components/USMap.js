@@ -380,13 +380,12 @@ const USMap = ({ selectedStates, filingType, onStateClick }) => {
       state.style.transformBox = 'fill-box';
       state.style.transformOrigin = 'center';
       state.classList.add('state', 'clickable');
-      addStateLabel(state);
       state.addEventListener('mouseenter', handleMouseEnter);
       state.addEventListener('mousemove', handleMouseMove);
       state.addEventListener('mouseleave', handleMouseLeave);
       state.addEventListener('click', handleClick);
     },
-    [addStateLabel, handleMouseEnter, handleMouseMove, handleMouseLeave, handleClick]
+    [handleMouseEnter, handleMouseMove, handleMouseLeave, handleClick]
   );
 
   useEffect(() => {
@@ -396,12 +395,15 @@ const USMap = ({ selectedStates, filingType, onStateClick }) => {
     }
     if (svgRef.current && !initializedRef.current) {
       const states = svgRef.current.querySelectorAll('path[id]');
-      states.forEach((state) => setupStateElement(state));
+      states.forEach((state) => {
+        setupStateElement(state);
+        addStateLabel(state);
+      });
       addLegendOverlay();
       updateMap();
       initializedRef.current = true;
     }
-  }, [setupStateElement, addLegendOverlay, updateMap]);
+  }, [setupStateElement, addStateLabel, addLegendOverlay, updateMap]);
 
   useEffect(() => {
     if (typeof document === 'undefined') return;
