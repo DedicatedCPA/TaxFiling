@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useCallback, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { stateFilingData } from '../data/stateFilingData';
-import { getConditionalText } from '../data/stateFilingData';
 import { ReactComponent as USSVG } from '../assets/us.svg';
 
 const TooltipContent = ({ stateId, stateData }) => {
@@ -23,12 +22,12 @@ const TooltipContent = ({ stateId, stateData }) => {
     }
   }
 
-  const hasConditional = Object.values(stateData.forms).some(status => status === 'conditional');
-  const conditionalWarning = hasConditional ? (
-    <div className="tooltip-note" style={{ margin: 0, fontSize: '11px' }}>
-      <strong>Conditional: {getConditionalText(stateId)}</strong>
-    </div>
-  ) : null;
+    const hasConditional = Object.values(stateData.forms).some(status => status === 'conditional');
+    const conditionalWarning = hasConditional && stateData.conditionalText ? (
+      <div className="tooltip-note" style={{ margin: 0, fontSize: '11px' }}>
+        <strong>Conditional: {stateData.conditionalText}</strong>
+      </div>
+    ) : null;
 
   let warningBlock = null;
   if (warnings.length && conditionalWarning) {
