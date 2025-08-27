@@ -368,25 +368,18 @@ const USMap = ({ selectedStates, filingType, onStateClick }) => {
     updateTextColors();
   }, [resetStateStyles, applySelectedStateStyles, updateTextColors]);
 
-  const setupStateElement = useCallback(
-    (state) => {
-      state.removeAttribute('style');
-      state.removeAttribute('fill');
-      state.style.setProperty('fill', '#f9fafb', 'important');
-      state.setAttribute('fill', '#f9fafb');
-      state.style.cursor = 'pointer';
-      state.style.transition = 'fill 0.3s, stroke-width 0.3s, transform 0.2s';
-      state.style.position = 'relative';
-      state.style.transformBox = 'fill-box';
-      state.style.transformOrigin = 'center';
-      state.classList.add('state', 'clickable');
-      state.addEventListener('mouseenter', handleMouseEnter);
-      state.addEventListener('mousemove', handleMouseMove);
-      state.addEventListener('mouseleave', handleMouseLeave);
-      state.addEventListener('click', handleClick);
-    },
-    [handleMouseEnter, handleMouseMove, handleMouseLeave, handleClick]
-  );
+  const setupStateElement = useCallback((state) => {
+    state.removeAttribute('style');
+    state.removeAttribute('fill');
+    state.style.setProperty('fill', '#f9fafb', 'important');
+    state.setAttribute('fill', '#f9fafb');
+    state.style.cursor = 'pointer';
+    state.style.transition = 'fill 0.3s, stroke-width 0.3s, transform 0.2s';
+    state.style.position = 'relative';
+    state.style.transformBox = 'fill-box';
+    state.style.transformOrigin = 'center';
+    state.classList.add('state', 'clickable');
+  }, []);
 
   useEffect(() => {
     if (typeof document === 'undefined') return;
@@ -395,15 +388,39 @@ const USMap = ({ selectedStates, filingType, onStateClick }) => {
     }
     if (svgRef.current && !initializedRef.current) {
       const states = svgRef.current.querySelectorAll('path[id]');
-      states.forEach((state) => {
-        setupStateElement(state);
-        addStateLabel(state);
+      states.forEach((path) => {
+        setupStateElement(path);
+        addStateLabel(path);
+        path.addEventListener('mouseenter', handleMouseEnter);
+        path.addEventListener('mousemove', handleMouseMove);
+        path.addEventListener('mouseleave', handleMouseLeave);
+        path.addEventListener('click', handleClick);
       });
       addLegendOverlay();
       updateMap();
       initializedRef.current = true;
     }
-  }, [setupStateElement, addStateLabel, addLegendOverlay, updateMap]);
+    return () => {
+      if (svgRef.current) {
+        const states = svgRef.current.querySelectorAll('path[id]');
+        states.forEach((path) => {
+          path.removeEventListener('mouseenter', handleMouseEnter);
+          path.removeEventListener('mousemove', handleMouseMove);
+          path.removeEventListener('mouseleave', handleMouseLeave);
+          path.removeEventListener('click', handleClick);
+        });
+      }
+    };
+  }, [
+    setupStateElement,
+    addStateLabel,
+    addLegendOverlay,
+    updateMap,
+    handleMouseEnter,
+    handleMouseMove,
+    handleMouseLeave,
+    handleClick
+  ]);
 
   useEffect(() => {
     if (typeof document === 'undefined') return;
