@@ -87,6 +87,7 @@ const Tooltip = ({ info }) => {
   const [style, setStyle] = useState({ left: info.x + 15, top: info.y - 15 });
 
   useEffect(() => {
+    if (typeof document === 'undefined' || typeof window === 'undefined') return;
     if (ref.current) {
       const rect = ref.current.getBoundingClientRect();
       let left = info.x + 15;
@@ -98,6 +99,7 @@ const Tooltip = ({ info }) => {
       setStyle({ left, top });
     }
   }, [info.x, info.y]);
+  if (typeof document === 'undefined') return null;
 
   return createPortal(
     <div
@@ -195,6 +197,7 @@ const USMap = ({ selectedStates, filingType, onStateClick }) => {
 
   // Add state abbreviation labels
   const addStateLabel = useCallback((stateElement) => {
+    if (typeof document === 'undefined') return false;
     const stateId = stateElement.id;
     if (!stateId || !stateFilingData[stateId]) return false;
     if (!isStateSuitableForText(stateElement)) return false;
@@ -293,7 +296,7 @@ const USMap = ({ selectedStates, filingType, onStateClick }) => {
   const svgElement = useMemo(() => enhanceSvg(<USSVG />), [enhanceSvg]);
 
   const addLegendOverlay = useCallback(() => {
-    if (!svgContainerRef.current) return;
+    if (typeof document === 'undefined' || !svgContainerRef.current) return;
     const legendOverlay = document.createElement('div');
     legendOverlay.className = 'legend-overlay';
 
@@ -402,6 +405,7 @@ const USMap = ({ selectedStates, filingType, onStateClick }) => {
   }, [addStateLabel]);
 
   useEffect(() => {
+    if (typeof document === 'undefined') return;
     if (svgRef.current && !initializedRef.current) {
       const states = svgRef.current.querySelectorAll('path[id]');
       states.forEach(state => setupStateElement(state));
@@ -412,6 +416,7 @@ const USMap = ({ selectedStates, filingType, onStateClick }) => {
   }, [setupStateElement, addLegendOverlay, updateMap]);
 
   useEffect(() => {
+    if (typeof document === 'undefined') return;
     if (initializedRef.current) {
       updateMap();
     }
@@ -420,6 +425,10 @@ const USMap = ({ selectedStates, filingType, onStateClick }) => {
   useEffect(() => {
     return () => setTooltipInfo(null);
   }, []);
+
+  if (typeof document === 'undefined') {
+    return null;
+  }
 
   return (
     <div id="svgContainer" ref={svgContainerRef}>
