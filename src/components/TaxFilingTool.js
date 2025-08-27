@@ -66,12 +66,6 @@ const TaxFilingTool = () => {
     setShowModal(false);
   };
 
-  const openTestModal = () => {
-    setModalTitle('Test Modal');
-    setModalStates(selectedStates);
-    setShowModal(true);
-  };
-
   // Calculate counts for each bucket
   const getBucketCounts = () => {
     let requiredCount = 0;
@@ -177,23 +171,17 @@ const TaxFilingTool = () => {
         </div>
         
           <div className="action-buttons">
-            <button
-              className="action-button select-all-btn"
-              onClick={selectAll}
-            >
-              Select All
+          <button
+            className="action-button select-all-btn"
+            onClick={selectAll}
+          >
+            Select All
           </button>
           <button
             className="action-button reset-all-btn"
             onClick={resetAll}
           >
             Reset All
-          </button>
-          <button
-            className="action-button test-modal-btn"
-            onClick={openTestModal}
-          >
-            Test Modal
           </button>
         </div>
       </div>
