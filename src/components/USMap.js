@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useCallback, useMemo, useState } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { stateFilingData } from '../data/stateFilingData';
 import { ReactComponent as USSVG } from '../assets/us.svg';
@@ -273,27 +273,6 @@ const USMap = ({ selectedStates, filingType, onStateClick }) => {
     onStateClick(stateId);
   }, [onStateClick]);
 
-  const enhanceSvg = useCallback((element) => {
-    if (!React.isValidElement(element)) return element;
-    const newProps = {};
-    if (element.type === 'svg') {
-      newProps.ref = svgRef;
-      newProps.className = 'usa-map';
-    }
-    if (element.props.id) {
-      newProps.onMouseEnter = handleMouseEnter;
-      newProps.onMouseMove = handleMouseMove;
-      newProps.onMouseLeave = handleMouseLeave;
-      newProps.onClick = handleClick;
-    }
-    const children = element.props.children
-      ? React.Children.map(element.props.children, enhanceSvg)
-      : null;
-    return React.cloneElement(element, newProps, children);
-  }, [handleMouseEnter, handleMouseMove, handleMouseLeave, handleClick]);
-
-  const svgElement = useMemo(() => enhanceSvg(<USSVG />), [enhanceSvg]);
-
   const addLegendOverlay = useCallback(() => {
     if (typeof document === 'undefined' || !svgContainerRef.current) return;
     const legendOverlay = document.createElement('div');
@@ -389,25 +368,35 @@ const USMap = ({ selectedStates, filingType, onStateClick }) => {
     updateTextColors();
   }, [resetStateStyles, applySelectedStateStyles, updateTextColors]);
 
-  const setupStateElement = useCallback((state) => {
-    state.removeAttribute('style');
-    state.removeAttribute('fill');
-    state.style.setProperty('fill', '#f9fafb', 'important');
-    state.setAttribute('fill', '#f9fafb');
-    state.style.cursor = 'pointer';
-    state.style.transition = 'fill 0.3s, stroke-width 0.3s, transform 0.2s';
-    state.style.position = 'relative';
-    state.style.transformBox = 'fill-box';
-    state.style.transformOrigin = 'center';
-    state.classList.add('state', 'clickable');
-    addStateLabel(state);
-  }, [addStateLabel]);
+  const setupStateElement = useCallback(
+    (state) => {
+      state.removeAttribute('style');
+      state.removeAttribute('fill');
+      state.style.setProperty('fill', '#f9fafb', 'important');
+      state.setAttribute('fill', '#f9fafb');
+      state.style.cursor = 'pointer';
+      state.style.transition = 'fill 0.3s, stroke-width 0.3s, transform 0.2s';
+      state.style.position = 'relative';
+      state.style.transformBox = 'fill-box';
+      state.style.transformOrigin = 'center';
+      state.classList.add('state', 'clickable');
+      addStateLabel(state);
+      state.addEventListener('mouseenter', handleMouseEnter);
+      state.addEventListener('mousemove', handleMouseMove);
+      state.addEventListener('mouseleave', handleMouseLeave);
+      state.addEventListener('click', handleClick);
+    },
+    [addStateLabel, handleMouseEnter, handleMouseMove, handleMouseLeave, handleClick]
+  );
 
   useEffect(() => {
     if (typeof document === 'undefined') return;
+    if (!svgRef.current && svgContainerRef.current) {
+      svgRef.current = svgContainerRef.current.querySelector('svg');
+    }
     if (svgRef.current && !initializedRef.current) {
       const states = svgRef.current.querySelectorAll('path[id]');
-      states.forEach(state => setupStateElement(state));
+      states.forEach((state) => setupStateElement(state));
       addLegendOverlay();
       updateMap();
       initializedRef.current = true;
@@ -431,7 +420,7 @@ const USMap = ({ selectedStates, filingType, onStateClick }) => {
 
   return (
     <div id="svgContainer" ref={svgContainerRef}>
-      {svgElement}
+      <USSVG className="usa-map" />
       {tooltipInfo && <Tooltip info={tooltipInfo} />}
     </div>
   );
